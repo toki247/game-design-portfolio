@@ -1,0 +1,34 @@
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*.docx       # Word 临时锁文件
+~$*.xlsx       # Excel 临时锁文件
+*.swp
+*.swo
+
+# 过程产物
+*.bak
+*.tmp
+
+# 构建 / 缓存
+node_modules/
+__pycache__/
+*.pyc
+.gradle/
+build/
+dist/
+
+# 引擎 / 编辑器临时
+.vs/
+.vscode/
+.idea/
+*.tmpproj/
+
+# Godot / Unity / UE 特定
+.import/
+.imported/
+*.translation
+*.gd.meta
+*.cs.meta
+*.uasset
