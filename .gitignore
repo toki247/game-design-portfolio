@@ -32,3 +32,6 @@ dist/
 *.gd.meta
 *.cs.meta
 *.uasset
+
+# GodotProject 整个目录(代码不进 Git,但 GDD/骨架等文档正常同步)
+封印勇者/GodotProject/
