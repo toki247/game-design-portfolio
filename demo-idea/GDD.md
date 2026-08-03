@@ -257,6 +257,44 @@
 | **priority** | int | 触发优先级(默认 0,越小越先) |
 | source | str | 来源标识 |
 
+### 4.5 敌人 + AI
+
+> 敌人 = Character + AI 行为 + 攻击模式(数据驱动 JSON 加载)。
+
+**敌人基础**
+- 跟玩家一样的 Character 结构(§ 4.3)
+- **没有 AP**,一回合行动次数根据设计来(可配)
+- MP / 资源 / buff 队列(可配,根据敌人设计)
+- 全部字段走 JSON
+
+**敌人技能结构**
+- **AI 触发的攻击模式**(不需要消除方块)
+- 复用 Effect 数据结构(§ 4.4):`list[Effect]`
+- 触发模式:`trigger` 字段(periodic / charge / counter / on_turn_start / on_hp_threshold 等)
+- 触发参数:`params` 字段
+- 目标:`target` 字段(player / self 等)
+
+**AI 行为**
+- type 枚举(已定):random / charge / counter / periodic
+- **初步采用 periodic 形式**
+- 加上关键节点的特殊机制或技能(`on_hp_threshold` 等)
+- AI 行为组合一般只有 1 个(简化)
+
+**攻击模式**
+- 复用 Effect + Buff 数据结构(§ 4.4):
+  - **伤害** = `Effect(type="damage", params={value: N})`
+  - **DoT** = `Effect(type="dot", params={damage_per_turn: N, duration: M})`
+  - **debuff** = `Effect(type="buff", params={buff_type: "debuff_X", value: -V, duration: M})` 给玩家施加负向 buff
+- 攻击效果组合:`list[Effect]`,支持多效果一次攻击
+
+**拓展**
+- **数据驱动**:全部从 JSON 加载
+- 强度和难度通过**数值配置 + 机制设计**(可配)
+
+### 4.6 肉鸽系统
+
+(待 W4 完成后展开)
+
 ---
 
 ## 5. UI / 视觉(待定)
@@ -298,3 +336,4 @@
 - 2026-08-03 下午:§ 4.1 棋盘系统规则定稿(基础/初始化/新方块/防卡关/流程/边界/数据结构)
 - 2026-08-03 下午:§ 4.2 回合系统规则定稿(基础/AP-MP/buff 跨回合/状态机/战斗结束)
 - 2026-08-03 下午:§ 4.0 核心算法规则定稿(消除检测/交换验证/重力/连锁/技能结算/buff 触发顺序)
+- 2026-08-03 下午:§ 4.5 敌人 + AI 规则定稿(基础/技能结构/AI 行为/攻击模式/拓展)
