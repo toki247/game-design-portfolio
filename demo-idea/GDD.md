@@ -85,14 +85,75 @@
 
 ---
 
-## 4. 详细系统设计(W2-W3 展开)
+## 4. 详细系统设计(W4 机制清单 · 进行中)
 
 ### 4.1 棋盘系统
 ### 4.2 回合系统
 ### 4.3 角色属性
+
+> 通用字段表,支持多角色(玩家 / 敌人 / 未来 NPC)。所有数值字段都通过 JSON 注入,详见后续"配置参考文档"。
+
+#### 角色 (Character)
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | str | 唯一标识 |
+| name | str | 角色名 |
+| type | enum | `player` / `enemy` |
+| hp / hp_max | int | 当前/最大血量 |
+| ap / ap_max | int | 当前/最大行动点 |
+| resources | dict[str, Resource] | 资源槽(MP/能量/...) |
+| buff_queue | list[Buff] | FIFO buff 队列 |
+| armor | int | 护甲值(独立,跨回合) |
+| damage_reduction | int | 当前减伤 % |
+| skills | list[Skill] | 技能列表 |
+| ai_behavior | AIBehavior? | 敌人 AI(玩家 None) |
+
+#### 资源 (Resource)
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| name | str | 资源名(MP/能量/...) |
+| current | int | 当前值 |
+| max | int | 上限 |
+| regen_per_turn | int | 每回合自动恢复(默认 0) |
+| **carry_over** | bool | 跨回合是否保留(默认 true) |
+
 ### 4.4 技能系统
-### 4.5 敌方 + AI
-### 4.6 肉鸽系统
+
+> 数据式驱动(JSON 注入),支持多颜色 / 多效果 / 多档位。
+
+#### 技能 (Skill)
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | str | 唯一标识 |
+| name | str | 技能名 |
+| color | enum | `brown` / `white` / `black` / ... |
+| effects_by_count | dict[int, list[Effect]] | 消除数 → 效果列表 |
+| extra_block_rule | struct | 6+ 块规则(系数 + 公式) |
+
+#### 效果 (Effect)
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| type | enum | `damage` / `armor` / `buff` / `heal` / `dot` / ... |
+| target | enum | `self` / `enemy` / `all` |
+| params | dict | 数值参数(可配) |
+
+#### buff (Buff)
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | str | 唯一标识 |
+| type | enum | `amplify` / `reduction` / `dot` / `regen` / ... |
+| value | float | 数值 |
+| duration | enum | `permanent` / N 回合 |
+| **stack_rule** | enum | `queue` / `max` / `sum` / `replace` |
+| **max_stacks** | int? | 最大叠加数(可选) |
+| **carry_over** | bool | 跨回合是否保留(默认 true) |
+| trigger | enum | 触发条件 |
+| source | str | 来源标识 |
 
 ---
 
@@ -121,12 +182,14 @@
 ## 9. 路线图
 
 - W1 核心 idea ✅
-- W2 范围(当前)
-- W3 3C
-- W4 机制清单
+- W2 范围 ✅
+- W3 3C(暂缓)
+- W4 机制清单(进行中)
 - W5+ 实现 + 迭代
+  - 配置参考文档(JSON schema / 字段说明)
 
 ## 10. 修改记录
 
 - 2026-08-03 凌晨:初版骨架,基于 idea-终版.md
 - 2026-08-03 上午:W2 范围规则定稿(棋盘/行动/消除/三技能/增幅 buff),数字待 W3
+- 2026-08-03 下午:W4 机制清单 启动,三件套(角色/技能/buff)字段表定稿,后续单开技术文档
