@@ -185,8 +185,11 @@ function randSlot() { return 1 + Math.floor(Math.random() * 3); }
 
 // ============ 棋盘 ============
 function fillBoardRandom() {
-  state.board = [];
-  for (let i = 0; i < 40; i++) state.board.push(makeBlock(randSlot()));
+  // 显式创建 40 长度数组 + 全部填充
+  state.board = new Array(40).fill(null);
+  for (let i = 0; i < 40; i++) {
+    state.board[i] = makeBlock(randSlot());
+  }
 }
 
 function shuffleBoard() {
@@ -238,10 +241,25 @@ function findGroups() {
 }
 
 function applyGravityAndRefill() {
-  // 常见三消逻辑:消除的位置补新方块,其他位置保持不动
-  // (重力方向影响视觉,数据层只看"补空位")
+  // 整盘重排:收集非 null → 打乱 → 重置 → 补满 40
+  // 这样保证 state.board 永远 40 个非 null block(无论消除多少)
+  const remaining = [];
   for (let i = 0; i < 40; i++) {
-    if (state.board[i] === null) state.board[i] = makeBlock(randSlot());
+    if (state.board[i] !== null) remaining.push(state.board[i]);
+  }
+  // 打乱顺序(避免视觉聚集)
+  for (let i = remaining.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+  }
+  // 全部置 null,再填充
+  for (let i = 0; i < 40; i++) state.board[i] = null;
+  for (let i = 0; i < 40; i++) {
+    if (i < remaining.length) {
+      state.board[i] = remaining[i];
+    } else {
+      state.board[i] = makeBlock(randSlot());
+    }
   }
 }
 
@@ -435,7 +453,12 @@ function updateUI() {
   for (let i = 0; i < 40; i++) {
     const block = state.board[i];
     const div = document.createElement('div');
-    div.className = 'block ' + COLORS[block.slot];
+    if (block && COLORS[block.slot]) {
+      div.className = 'block ' + COLORS[block.slot];
+    } else {
+      // fallback:null/undefined 时用 brown 占位
+      div.className = 'block brown';
+    }
     div.dataset.idx = i;
     board.appendChild(div);
   }
@@ -504,8 +527,9 @@ document.getElementById('end-turn-btn').addEventListener('click', async () => {
 
 // ============ 启动 ============
 fillBoardRandom();
-// 防开局消除
-while (findGroups().length > 0) shuffleBoard();
+// 防开局消除(加 safety 防止极端情况下死循环)
+let safety = 100;
+while (findGroups().length > 0 && safety-- > 0) shuffleBoard();
 playerTurn();
 updateUI();
 log('原型启动:核心机制 + 3 技能(挥砍/护甲/增幅) + 1 敌人(史莱姆)', 's');
