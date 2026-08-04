@@ -72,16 +72,20 @@
 | target | enum | - | `self` / `enemy` / `all` | 目标 |
 | params | dict | {} | - | 数值参数(可配) |
 
-### 5.1 常见 Effect 类型参数
+### 5.1 常见 Effect 类型参数(Discriminated Union 模式)
+
+> `type` 字段决定 `params` 的 schema。实现时按 type 分支解析,加 schema 校验。
 
 | type | params 字段 | 备注 |
 |---|---|---|
-| `damage` | `{value: N}` | 直接伤害 |
-| `armor` | `{value: N}` | 护甲值 |
-| `heal` | `{value: N}` | 治疗 |
-| `dot` | `{damage_per_turn: N, duration: M}` | 持续伤害(M 回合,每回合 N 伤害) |
-| `buff` | `{buff_type: "X", value: V, duration: M}` | 施加 buff(给 target 加 buff) |
-| `debuff` | `{buff_type: "X", value: -V, duration: M}` | 施加负向 buff |
+| `damage` | `{value: int}` | 直接伤害 |
+| `armor` | `{value: int}` | 护甲值 |
+| `heal` | `{value: int}` | 治疗 |
+| `dot` | `{damage_per_turn: int, duration: int}` | 持续伤害(M 回合,每回合 N 伤害) |
+| `buff` | `{buff_type: str, value: float, duration: int \| "permanent"}` | 施加 buff(给 target 加 buff) |
+| `debuff` | `{buff_type: str, value: float, duration: int \| "permanent"}` | 施加负向 buff(value 通常为负,可等价于 buff) |
+
+**注**:`debuff` 本质是 `buff` + 负 value,实现时可统一为 `buff`,只校验 value 符号。或者保留 `debuff` 作为语义别名。
 
 ## 6. Buff
 
@@ -149,9 +153,33 @@
 | id | str | - | - | 唯一标识 |
 | name | str | - | - | 攻击名 |
 | effects | list[Effect] | - | - | 攻击效果 |
-| trigger | enum | - | `periodic` / `charge` / `counter` / `on_turn_start` / `on_hp_threshold` | 触发模式 |
-| params | dict | {} | - | 触发参数 |
+| trigger | enum | - | `periodic` / `charge` / `counter` / `on_turn_start` / `on_turn_end` / `on_hp_threshold` | 触发模式 |
+| params | dict | {} | - | 触发参数(见 10.1.1) |
 | target | enum | - | `player` / `self` / `all` | 目标 |
+
+#### 10.1.1 trigger.params schema(Discriminated Union 模式)
+
+> `trigger` 字段决定 `params` 的 schema。实现时按 trigger 分支解析。
+
+| trigger | params 字段 | 备注 |
+|---|---|---|
+| `periodic` | `{interval: int}` | 每 N 回合触发 |
+| `charge` | `{charge_turns: int}` | 蓄力 N 回合后触发 |
+| `counter` | `{chance: float}` | 受击时 N 概率触发(0.0-1.0) |
+| `on_turn_start` | `{}` | 回合开始触发,无参数 |
+| `on_turn_end` | `{}` | 回合结束触发,无参数 |
+| `on_hp_threshold` | `{hp_threshold: int, hp_comparison: enum}` 或 `{hp_threshold_range: [min, max], hp_comparison: enum}` | HP 阈值触发 |
+
+##### hp_comparison 枚举值
+
+| 值 | 语义 |
+|---|---|
+| `greater` | `HP > threshold` |
+| `greater_equal` | `HP >= threshold` |
+| `less` | `HP < threshold` |
+| `less_equal` | `HP <= threshold` |
+| `within_range` | `min <= HP <= max`(配 `hp_threshold_range` 用) |
+| `outside_range` | `HP < min` 或 `HP > max`(配 `hp_threshold_range` 用) |
 
 ### 10.2 AI 行为 (AIBehavior)
 
@@ -261,7 +289,7 @@
       "name": "冰霜吐息",
       "effects": [{"type": "damage", "target": "player", "params": {"value": 8}}],
       "trigger": "on_hp_threshold",
-      "params": {"threshold": 50, "comparison": "greater"},
+      "params": {"hp_threshold": 50, "hp_comparison": "greater"},
       "target": "player"
     },
     {
@@ -272,7 +300,7 @@
         {"type": "debuff", "target": "player", "params": {"buff_type": "slow", "value": -30, "duration": 2}}
       ],
       "trigger": "on_hp_threshold",
-      "params": {"threshold": 50, "comparison": "less_equal", "charge_turns": 2},
+      "params": {"hp_threshold": 50, "hp_comparison": "less_equal", "charge_turns": 2},
       "target": "player"
     }
   ],
@@ -295,7 +323,7 @@
       "name": "暗影箭",
       "effects": [{"type": "damage", "target": "player", "params": {"value": 10}}],
       "trigger": "on_hp_threshold",
-      "params": {"threshold": 75, "comparison": "greater"}
+      "params": {"hp_threshold": 75, "hp_comparison": "greater"}
     },
     {
       "id": "shadow_counter",
@@ -312,14 +340,14 @@
         {"type": "dot", "target": "player", "params": {"damage_per_turn": 5, "duration": 2}}
       ],
       "trigger": "on_hp_threshold",
-      "params": {"threshold_range": [50, 75], "charge_turns": 2}
+      "params": {"hp_threshold_range": [50, 75], "hp_comparison": "within_range", "charge_turns": 2}
     },
     {
       "id": "weakness_curse",
       "name": "虚弱诅咒",
       "effects": [{"type": "debuff", "target": "player", "params": {"buff_type": "attack_down", "value": -50, "duration": 1}}],
       "trigger": "on_hp_threshold",
-      "params": {"threshold": 50, "comparison": "less_equal"}
+      "params": {"hp_threshold": 50, "hp_comparison": "less_equal"}
     }
   ],
   "ai_behavior": {"type": "periodic", "params": {}}
@@ -352,6 +380,18 @@
 敌人回合: actions 恢复 → AI 触发 → 攻击 → 结束 → 玩家回合
 关键转换(玩家结算 / 敌人结算): dot 伤害结算 + 回合结束机制结算
 ```
+
+#### 12.3.1 回合开始流程
+
+1. **资源再生**:每个 Resource 按 `regen_per_turn` 增加(MP 默认 0,不自动恢复)
+2. 进入行动阶段
+
+#### 12.3.2 回合结束流程
+
+1. 判定敌人 dot 伤害
+2. 判定玩家 dot 伤害
+3. buff 持续回合数 -1
+4. 控制状态重置
 
 ## 13. UI / 视觉
 
