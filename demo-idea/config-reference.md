@@ -425,8 +425,55 @@
 
 ## 15. 加权算法(肉鸽符文池)
 
+> **当前状态:暂定 0%(纯随机抽取)**,加权机制后续再加。
+
 | 字段 | 类型 | 默认值 | 范围 | 备注 |
 |---|---|---|---|---|
 | bd 流派数 | int | 3 | 3-4 | 用户暂定 3 |
 | 抽取 N 个 | int | 3 | 1-5 | 每次战斗/商店/事件抽取数 |
-| 加权基数 | float | 1.0 | 0-∞ | 玩家持有标签最多的额外加权 |
+| 加权基数 | float | 1.0 | 0-∞ | **当前不生效,留 TODO** |
+
+## 16. 状态机事件清单
+
+> 状态机用事件驱动。§ 4.2 状态枚举已定,这里定义**事件列表 + 状态转移**。
+
+### 16.1 状态(已定)
+
+- `player_turn` / `player_settling` / `enemy_turn` / `enemy_settling` / `battle_end`
+
+### 16.2 事件(按来源分 4 类)
+
+**玩家操作**
+- `swap_blocks_valid` - 有效交换(形成消除)
+- `swap_blocks_invalid` - 无效交换(回滚,不消耗行动)
+- `end_turn` - 玩家手动结束(唯一回合结束方式)
+
+**消除 / 连锁**
+- `chain_complete` - 连锁结束
+- `anti_stuck_pass` - 防卡关检测通过
+- `anti_stuck_fail` - 防卡关检测失败(整盘重置)
+
+**回合切换**
+- `player_settle_done` - 玩家结算完成
+- `enemy_action_done` - 敌人行动完成
+- `enemy_settle_done` - 敌人结算完成
+
+**战斗结束**
+- `player_dies` - 玩家 HP ≤ 0
+- `enemy_dies` - 敌人 HP ≤ 0
+- `both_die` - 同时 ≤ 0(玩家胜,HP=1)
+
+## 17. 状态转移表
+
+| 当前状态 | 事件 | 下一状态 | 备注 |
+|---|---|---|---|
+| `player_turn` | `swap_blocks_valid` | `player_settling` | 进入消除结算 |
+| `player_turn` | `swap_blocks_invalid` | `player_turn` | 回滚,不消耗行动 |
+| `player_turn` | `end_turn` | `player_settling` | 玩家手动结束(唯一方式) |
+| `player_settling` | `chain_complete` | `player_turn` | 连锁结束,继续行动 |
+| `player_settling` | `settle_done` | `enemy_turn` | 玩家结算完成,进入敌人回合 |
+| `enemy_turn` | `action_done` | `enemy_settling` | 敌人行动完成 |
+| `enemy_settling` | `settle_done` | `player_turn` | 敌人结算完成,进入玩家回合 |
+| `*` | `player_dies` | `battle_end` (失败) | 任意状态 |
+| `*` | `enemy_dies` | `battle_end` (胜利) | 任意状态 |
+| `*` | `both_die` | `battle_end` (胜利,HP=1) | 同时死亡,玩家胜 |
