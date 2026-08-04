@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>三消 + 回合制战斗 + 肉鸽 原型</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Courier New', monospace;
+    background: #1a1a2e;
+    color: #eee;
+    padding: 20px;
+    user-select: none;
+  }
+  .game { max-width: 700px; margin: 0 auto; }
+  .section {
+    background: #2a2a3e;
+    border: 2px solid #555;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .section h3 { font-size: 13px; color: #aaa; margin-bottom: 8px; }
+  .stats { display: flex; gap: 16px; align-items: center; font-size: 13px; flex-wrap: wrap; }
+  .bar { background: #444; height: 14px; width: 200px; border: 1px solid #666; position: relative; }
+  .bar-fill { background: #d33; height: 100%; transition: width 0.2s; }
+  .bar-fill.player { background: #4a4; }
+  .bar-text {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    text-align: center; line-height: 14px; font-size: 10px; color: white; text-shadow: 1px 1px 0 #000;
+  }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(10, 48px);
+    grid-template-rows: repeat(4, 48px);
+    gap: 2px;
+    background: #444;
+    padding: 4px;
+    border: 2px solid #666;
+  }
+  .block {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    image-rendering: pixelated;
+  }
+  .block.brown { background: #b87532; box-shadow: inset 0 -4px 0 #8a5520, inset 0 2px 0 #d89552; }
+  .block.white { background: #f0e8d0; box-shadow: inset 0 -4px 0 #c0b890, inset 0 2px 0 #fff; }
+  .block.black { background: #1a1a1a; box-shadow: inset 0 -4px 0 #000, inset 0 2px 0 #444; }
+  .block:hover { transform: scale(1.08); }
+  .block.dragging { opacity: 0.4; }
+  .block.clearing { animation: clear 0.3s forwards; }
+  @keyframes clear { to { transform: scale(0); opacity: 0; } }
+  .ap-dots { display: flex; gap: 3px; }
+  .ap-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #ffd700;
+    border: 1px solid #b8860b;
+  }
+  .ap-dot.used { background: #333; border-color: #555; }
+  button {
+    font-family: inherit;
+    background: #d33;
+    color: white;
+    border: 2px solid #800;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  button:hover { background: #e44; }
+  button:disabled { background: #555; cursor: not-allowed; }
+  .log {
+    height: 100px; overflow-y: auto;
+    font-size: 11px; line-height: 1.5;
+    background: #1a1a1a; padding: 6px;
+    border: 1px solid #555;
+  }
+  .log .p { color: #6cf; }
+  .log .e { color: #f66; }
+  .log .s { color: #aaa; }
+  .mp-bar { background: #4488cc; }
+  .buff-list { font-size: 11px; color: #ffa; }
+  .buff-list span { display: inline-block; padding: 1px 4px; margin-right: 3px; background: #553; border: 1px solid #886; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="section">
+    <h3>敌人</h3>
+    <div class="stats">
+      <span>史莱姆</span>
+      <div class="bar"><div class="bar-fill" id="enemy-hp-bar" style="width:100%"></div><div class="bar-text" id="enemy-hp-text">30 / 30</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>棋盘 (10 × 4,横向重力,新方块从左侧补)</h3>
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="section">
+    <h3>魔剑士(槽 1 挥砍 / 槽 2 护甲 / 槽 3 增幅)</h3>
+    <div class="stats">
+      <div class="bar"><div class="bar-fill player" id="player-hp-bar" style="width:100%"></div><div class="bar-text" id="player-hp-text">100 / 100</div></div>
+      <div class="bar"><div class="bar-fill mp-bar" id="mp-bar" style="width:0%"></div><div class="bar-text" id="mp-text">MP 0 / 10</div></div>
+      <div>AP: <div class="ap-dots" id="ap-dots"></div></div>
+      <div>护甲: <span id="armor-text">0</span></div>
+      <div>减伤: <span id="reduction-text">0%</span></div>
+    </div>
+    <div class="buff-list">增幅队列(FIFO): <span id="buff-list">(空)</span></div>
+    <button id="end-turn-btn">结束回合</button>
+  </div>
+
+  <div class="section">
+    <h3>战斗日志</h3>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script>
+// ============ 数据 ============
+const COLORS = { 1: 'brown', 2: 'white', 3: 'black' };
+const COLOR_NAMES = { 1: '棕(槽1挥砍)', 2: '白(槽2护甲)', 3: '黑(槽3增幅)' };
+
+// 魔剑士 3 技能(按 slot 1/2/3)
+const SKILLS = {
+  1: {  // 槽 1:挥砍
+    name: '挥砍',
+    3: { dmg: 5, mp: 1 },
+    4: { dmg: 9, mp: 2 },
+    5: { dmg: 15, mp: 3 },
+  },
+  2: {  // 槽 2:护甲
+    name: '护甲',
+    3: { armor: 5 },
+    4: { armor: 9, reduction: 5, reduction_dur: 2 },
+    5: { armor: 15, reduction: 10, reduction_dur: 2 },
+  },
+  3: {  // 槽 3:增幅
+    name: '增幅',
+    3: { buff: '增幅 I', value: 10 },
+    4: { buff: '增幅 II', value: 20 },
+    5: { buff: '增幅 III', value: 40 },
+  },
+};
+
+// ============ 状态 ============
+const state = {
+  board: [],  // 1D array, 40 个 Block {slot, id}
+  player: {
+    hp: 100, hp_max: 100,
+    mp: 0, mp_max: 10,
+    ap: 6, ap_max: 6,
+    armor: 0,
+    damage_reduction: 0,
+    reduction_turns: 0,
+    buff_queue: [],  // FIFO 队列
+  },
+  enemy: { name: '史莱姆', hp: 30, hp_max: 30 },
+  turn: 'player',  // 'player' / 'enemy' / 'battle_end'
+};
+
+// ============ 工具 ============
+const idx = (c, r) => c * 4 + r;
+const colRow = i => ({ col: Math.floor(i / 4), row: i % 4 });
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function log(msg, cls = 's') {
+  const log = document.getElementById('log');
+  const div = document.createElement('div');
+  div.className = cls;
+  div.textContent = msg;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function makeBlock(slot) {
+  return { slot, id: Math.random().toString(36).slice(2, 8) };
+}
+
+function randSlot() { return 1 + Math.floor(Math.random() * 3); }
+
+// ============ 棋盘 ============
+function fillBoardRandom() {
+  state.board = [];
+  for (let i = 0; i < 40; i++) state.board.push(makeBlock(randSlot()));
+}
+
+function shuffleBoard() {
+  for (let i = 0; i < 40; i++) state.board[i] = makeBlock(randSlot());
+}
+
+function findGroups() {
+  // 返回消除组列表,每组 {slot, indices[]}
+  const groups = [];
+  const used = new Set();
+
+  // 横线
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 10; c++) {
+      if (used.has(idx(c, r))) continue;
+      const slot = state.board[idx(c, r)].slot;
+      let end = c;
+      while (end < 10 && state.board[idx(end, r)].slot === slot) end++;
+      const len = end - c;
+      if (len >= 3) {
+        const indices = [];
+        for (let k = c; k < end; k++) { indices.push(idx(k, r)); used.add(idx(k, r)); }
+        groups.push({ slot, indices, shape: `横${len}` });
+      }
+    }
+  }
+  // 纵线
+  for (let c = 0; c < 10; c++) {
+    for (let r = 0; r < 4; r++) {
+      if (used.has(idx(c, r))) continue;
+      const slot = state.board[idx(c, r)].slot;
+      let end = r;
+      while (end < 4 && state.board[idx(c, end)].slot === slot) end++;
+      const len = end - r;
+      if (len >= 3) {
+        const indices = [];
+        for (let k = r; k < end; k++) { indices.push(idx(c, k)); used.add(idx(c, k)); }
+        groups.push({ slot, indices, shape: `纵${len}` });
+      }
+    }
+  }
+  // 2x2
+  for (let c = 0; c < 9; c++) {
+    for (let r = 0; r < 3; r++) {
+      if (used.has(idx(c, r)) || used.has(idx(c+1, r)) || used.has(idx(c, r+1)) || used.has(idx(c+1, r+1))) continue;
+      const a = state.board[idx(c, r)].slot;
+      if (state.board[idx(c+1, r)].slot === a && state.board[idx(c, r+1)].slot === a && state.board[idx(c+1, r+1)].slot === a) {
+        const indices = [idx(c, r), idx(c+1, r), idx(c, r+1), idx(c+1, r+1)];
+        for (const i of indices) used.add(i);
+        groups.push({ slot: a, indices, shape: '2x2' });
+      }
+    }
+  }
+  return groups;
+}
+
+function applyGravityAndRefill() {
+  // 横向重力:每行内,空位从 col 0 方向补(右侧方块"往右推")
+  // 简化:整盘重排 — 收集非空方块,从右到左填充
+  const filled = state.board.filter(b => b !== null && b !== undefined);
+  for (let i = 0; i < 40; i++) state.board[i] = null;
+  // 从右到左填充(保留方块)
+  for (let i = 39, j = filled.length - 1; i >= 0 && j >= 0; i--, j--) {
+    state.board[i] = filled[j];
+  }
+  // 补充新方块(从左侧)
+  for (let i = 0; i < 40; i++) {
+    if (state.board[i] === null) state.board[i] = makeBlock(randSlot());
+  }
+}
+
+function hasAnyValidSwap() {
+  // 遍历所有可能的交换,看是否能形成消除
+  for (let c = 0; c < 10; c++) {
+    for (let r = 0; r < 4; r++) {
+      // 只检查右和下(避免重复)
+      const dirs = [[1, 0], [0, 1]];
+      for (const [dc, dr] of dirs) {
+        const nc = c + dc, nr = r + dr;
+        if (nc >= 10 || nr >= 4) continue;
+        // 模拟交换
+        [state.board[idx(c, r)], state.board[idx(nc, nr)]] = [state.board[idx(nc, nr)], state.board[idx(c, r)]];
+        const groups = findGroups();
+        [state.board[idx(c, r)], state.board[idx(nc, nr)]] = [state.board[idx(nc, nr)], state.board[idx(c, r)]];
+        if (groups.length > 0) return true;
+      }
+    }
+  }
+  return false;
+}
+
+// ============ 技能结算 ============
+function consumeBuff() {
+  if (state.player.buff_queue.length === 0) return { used: null, mult: 1.0 };
+  const buff = state.player.buff_queue.shift();
+  return { used: buff, mult: 1 + buff.value / 100 };
+}
+
+function applySkillEffect(slot, count, mult) {
+  // 5+ 块:按 5 块效果 × (1 + (count-5) * 0.2)
+  const baseCount = Math.min(count, 5);
+  const skill = SKILLS[slot];
+  const eff = skill[baseCount];
+  if (!eff) return;
+
+  const extraCoef = count > 5 ? (1 + (count - 5) * 0.2) : 1.0;
+
+  if (slot === 1) {  // 挥砍
+    const dmg = Math.round(eff.dmg * mult * extraCoef);
+    dealDamageToEnemy(dmg);
+    log(`  挥砍 → 敌人 -${dmg} HP`, 'p');
+    const mp = Math.round(eff.mp * extraCoef);
+    state.player.mp = Math.min(state.player.mp_max, state.player.mp + mp);
+    log(`  +${mp} MP (当前 ${state.player.mp}/${state.player.mp_max})`, 'p');
+  } else if (slot === 2) {  // 护甲
+    const armor = Math.round(eff.armor * extraCoef);
+    state.player.armor += armor;
+    log(`  护甲 → +${armor} 护甲 (当前 ${state.player.armor})`, 'p');
+    if (eff.reduction) {
+      const r = Math.round(eff.reduction * extraCoef);
+      if (r > state.player.damage_reduction) {
+        state.player.damage_reduction = r;
+        state.player.reduction_turns = eff.reduction_dur;
+        log(`  减伤 → ${r}% (持续 ${eff.reduction_dur} 回合)`, 'p');
+      } else {
+        log(`  减伤 ${r}% (当前最大 ${state.player.damage_reduction}% 覆盖)`, 'p');
+      }
+    }
+  } else if (slot === 3) {  // 增幅
+    const value = Math.round(eff.value * extraCoef);
+    state.player.buff_queue.push({ name: eff.buff, value, slot });
+    log(`  增幅 buff [${eff.buff} +${value}%] 入队 (队列长度 ${state.player.buff_queue.length})`, 'p');
+  }
+}
+
+function dealDamageToEnemy(dmg) {
+  state.enemy.hp = Math.max(0, state.enemy.hp - dmg);
+  if (state.enemy.hp === 0) {
+    log(`★ 敌人 ${state.enemy.name} 死亡!`, 's');
+    state.turn = 'battle_end';
+  }
+  updateUI();
+}
+
+// ============ 战斗循环 ============
+async function doPlayerElimination() {
+  let chain = 0;
+  while (true) {
+    const groups = findGroups();
+    if (groups.length === 0) break;
+    chain++;
+    log(`--- 连锁 ${chain} ---`, 's');
+    for (const g of groups) {
+      const count = g.indices.length;
+      log(`消除 ${count} 个 ${COLOR_NAMES[g.slot]}(${g.shape})`, 'p');
+      // 视觉
+      for (const i of g.indices) {
+        const el = document.querySelector(`[data-idx="${i}"]`);
+        if (el) el.classList.add('clearing');
+      }
+      await sleep(250);
+      // 消耗队首 buff(如果有)
+      const { used, mult } = consumeBuff();
+      if (used) log(`  使用增幅 buff [${used.name} +${used.value}%]`, 'p');
+      // 结算
+      applySkillEffect(g.slot, count, mult);
+      // 清空
+      for (const i of g.indices) state.board[i] = null;
+    }
+    applyGravityAndRefill();
+    updateUI();
+    await sleep(150);
+  }
+  // 防卡关
+  if (!hasAnyValidSwap()) {
+    log('--- 防卡关:无消除可能,整盘重置 ---', 's');
+    shuffleBoard();
+    updateUI();
+  }
+}
+
+async function playerTurn() {
+  state.turn = 'player';
+  state.player.ap = state.player.ap_max;
+  updateUI();
+  log('=== 玩家回合 ===', 's');
+}
+
+async function enemyTurn() {
+  state.turn = 'enemy';
+  log('=== 敌人回合 ===', 's');
+  updateUI();
+  await sleep(400);
+  // 史莱姆攻击
+  const atk = { name: '撞击', dmg: 5 };
+  let dmg = atk.dmg;
+  // 护甲减伤
+  if (state.player.armor > 0) {
+    const absorbed = Math.min(state.player.armor, dmg);
+    state.player.armor -= absorbed;
+    dmg -= absorbed;
+    log(`  护甲吸收 ${absorbed} (剩余护甲 ${state.player.armor})`, 'p');
+  }
+  // 减伤 buff
+  if (state.player.damage_reduction > 0 && dmg > 0) {
+    const reduced = Math.round(dmg * state.player.damage_reduction / 100);
+    dmg -= reduced;
+    log(`  减伤 ${state.player.damage_reduction}% → 减少 ${reduced}`, 'p');
+  }
+  state.player.hp = Math.max(0, state.player.hp - dmg);
+  log(`敌人 ${atk.name} → 玩家 -${dmg} HP (${state.player.hp}/${state.player.hp_max})`, 'e');
+  if (state.player.hp === 0) {
+    state.turn = 'battle_end';
+    log('★ 玩家死亡!', 's');
+  }
+  // 回合结束结算
+  state.player.reduction_turns--;
+  if (state.player.reduction_turns <= 0) {
+    state.player.damage_reduction = 0;
+  }
+  // MP 不再生(魔剑士特有)
+  updateUI();
+  await sleep(400);
+  if (state.turn === 'battle_end') {
+    log('战斗结束! 刷新页面重开。', 's');
+    return;
+  }
+  playerTurn();
+}
+
+// ============ 交换 ============
+async function trySwap(c1, r1, c2, r2) {
+  if (Math.abs(c1 - c2) + Math.abs(r1 - r2) !== 1) {
+    log('只能交换相邻方块', 's');
+    return false;
+  }
+  const i1 = idx(c1, r1), i2 = idx(c2, r2);
+  // 模拟交换
+  [state.board[i1], state.board[i2]] = [state.board[i2], state.board[i1]];
+  const groups = findGroups();
+  if (groups.length === 0) {
+    // 回滚
+    [state.board[i1], state.board[i2]] = [state.board[i2], state.board[i1]];
+    log('无效交换(回滚,不消耗行动)', 's');
+    return false;
+  }
+  state.player.ap--;
+  log(`有效交换 → 消耗 1 AP(剩 ${state.player.ap})`, 'p');
+  updateUI();
+  await doPlayerElimination();
+  return true;
+}
+
+// ============ UI ============
+function updateUI() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  for (let i = 0; i < 40; i++) {
+    const block = state.board[i];
+    const div = document.createElement('div');
+    div.className = 'block ' + COLORS[block.slot];
+    div.dataset.idx = i;
+    board.appendChild(div);
+  }
+  document.getElementById('player-hp-bar').style.width = (state.player.hp / state.player.hp_max * 100) + '%';
+  document.getElementById('player-hp-text').textContent = `${state.player.hp} / ${state.player.hp_max}`;
+  document.getElementById('mp-bar').style.width = (state.player.mp / state.player.mp_max * 100) + '%';
+  document.getElementById('mp-text').textContent = `MP ${state.player.mp} / ${state.player.mp_max}`;
+  const apDots = document.getElementById('ap-dots');
+  apDots.innerHTML = '';
+  for (let i = 0; i < state.player.ap_max; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'ap-dot' + (i >= state.player.ap ? ' used' : '');
+    apDots.appendChild(dot);
+  }
+  document.getElementById('armor-text').textContent = state.player.armor;
+  document.getElementById('reduction-text').textContent = state.player.damage_reduction + '%';
+  const bl = document.getElementById('buff-list');
+  if (state.player.buff_queue.length === 0) {
+    bl.innerHTML = '(空)';
+  } else {
+    bl.innerHTML = state.player.buff_queue.map(b => `<span>${b.name} +${b.value}%</span>`).join('');
+  }
+  document.getElementById('enemy-hp-bar').style.width = (state.enemy.hp / state.enemy.hp_max * 100) + '%';
+  document.getElementById('enemy-hp-text').textContent = `${state.enemy.hp} / ${state.enemy.hp_max}`;
+  document.getElementById('end-turn-btn').disabled = state.turn !== 'player';
+}
+
+// ============ 交互 ============
+let dragSource = null;
+
+const boardEl = document.getElementById('board');
+
+boardEl.addEventListener('mousedown', (e) => {
+  if (state.turn !== 'player') return;
+  const target = e.target.closest('.block');
+  if (!target) return;
+  dragSource = parseInt(target.dataset.idx);
+  target.classList.add('dragging');
+});
+
+boardEl.addEventListener('mouseup', async (e) => {
+  if (dragSource === null) return;
+  document.querySelectorAll('.block').forEach(b => b.classList.remove('dragging'));
+  const target = e.target.closest('.block');
+  if (!target) { dragSource = null; return; }
+  const i = parseInt(target.dataset.idx);
+  if (i === dragSource) { dragSource = null; return; }
+  const a = colRow(dragSource);
+  const b = colRow(i);
+  dragSource = null;
+  await trySwap(a.col, a.row, b.col, b.row);
+});
+
+boardEl.addEventListener('mouseleave', () => {
+  if (dragSource !== null) {
+    document.querySelectorAll('.block').forEach(b => b.classList.remove('dragging'));
+    dragSource = null;
+  }
+});
+
+document.getElementById('end-turn-btn').addEventListener('click', async () => {
+  if (state.turn !== 'player') return;
+  log('玩家点击结束回合', 'p');
+  await enemyTurn();
+});
+
+// ============ 启动 ============
+fillBoardRandom();
+// 防开局消除
+while (findGroups().length > 0) shuffleBoard();
+playerTurn();
+updateUI();
+log('原型启动:核心机制 + 3 技能(挥砍/护甲/增幅) + 1 敌人(史莱姆)', 's');
+</script>
+</body>
+</html>
