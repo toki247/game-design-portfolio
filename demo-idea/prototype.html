@@ -194,50 +194,44 @@ function shuffleBoard() {
 }
 
 function findGroups() {
-  // 返回消除组列表,每组 {slot, indices[]}
+  // BFS 找同色连通块(4 方向:横/纵)
+  // 符合 W2 范围"7 种形式统一按 N 块映射":任何 ≥ 3 块连通都算 1 个 group,按总块数算效果
+  // - 横 3 → 3 消
+  // - 纵 3 → 3 消
+  // - T 字形(3+2)= 5 块连通 → 5 消
+  // - 2x2 → 4 块连通 → 4 消
+  // - 2x3 / 3x2 → 6 块连通 → 6+ 消(走 extra_coef 加成)
   const groups = [];
-  const used = new Set();
-
-  // 横线
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 10; c++) {
-      if (used.has(idx(c, r))) continue;
-      const slot = state.board[idx(c, r)].slot;
-      let end = c;
-      while (end < 10 && state.board[idx(end, r)].slot === slot) end++;
-      const len = end - c;
-      if (len >= 3) {
-        const indices = [];
-        for (let k = c; k < end; k++) { indices.push(idx(k, r)); used.add(idx(k, r)); }
-        groups.push({ slot, indices, shape: `横${len}` });
+  const visited = new Set();
+  for (let i = 0; i < 40; i++) {
+    if (visited.has(i)) continue;
+    const block = state.board[i];
+    if (!block) continue;
+    const slot = block.slot;
+    // BFS 找连通块
+    const group = [];
+    const queue = [i];
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      if (visited.has(cur)) continue;
+      const b = state.board[cur];
+      if (!b || b.slot !== slot) continue;
+      visited.add(cur);
+      group.push(cur);
+      const { col, row } = colRow(cur);
+      // 4 方向邻居
+      const neighbors = [
+        [col - 1, row], [col + 1, row],
+        [col, row - 1], [col, row + 1],
+      ];
+      for (const [nc, nr] of neighbors) {
+        if (nc < 0 || nc >= 10 || nr < 0 || nr >= 4) continue;
+        const n = idx(nc, nr);
+        if (!visited.has(n)) queue.push(n);
       }
     }
-  }
-  // 纵线
-  for (let c = 0; c < 10; c++) {
-    for (let r = 0; r < 4; r++) {
-      if (used.has(idx(c, r))) continue;
-      const slot = state.board[idx(c, r)].slot;
-      let end = r;
-      while (end < 4 && state.board[idx(c, end)].slot === slot) end++;
-      const len = end - r;
-      if (len >= 3) {
-        const indices = [];
-        for (let k = r; k < end; k++) { indices.push(idx(c, k)); used.add(idx(c, k)); }
-        groups.push({ slot, indices, shape: `纵${len}` });
-      }
-    }
-  }
-  // 2x2
-  for (let c = 0; c < 9; c++) {
-    for (let r = 0; r < 3; r++) {
-      if (used.has(idx(c, r)) || used.has(idx(c+1, r)) || used.has(idx(c, r+1)) || used.has(idx(c+1, r+1))) continue;
-      const a = state.board[idx(c, r)].slot;
-      if (state.board[idx(c+1, r)].slot === a && state.board[idx(c, r+1)].slot === a && state.board[idx(c+1, r+1)].slot === a) {
-        const indices = [idx(c, r), idx(c+1, r), idx(c, r+1), idx(c+1, r+1)];
-        for (const i of indices) used.add(i);
-        groups.push({ slot: a, indices, shape: '2x2' });
-      }
+    if (group.length >= 3) {
+      groups.push({ slot, indices: group });
     }
   }
   return groups;
