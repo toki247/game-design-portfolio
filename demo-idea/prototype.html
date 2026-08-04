@@ -163,8 +163,9 @@ const state = {
 };
 
 // ============ 工具 ============
-const idx = (c, r) => c * 4 + r;
-const colRow = i => ({ col: Math.floor(i / 4), row: i % 4 });
+// idx 公式:c + r * 10(行优先,跟 CSS Grid 一致,i 0-9 = row 0 的 col 0-9)
+const idx = (c, r) => c + r * 10;
+const colRow = i => ({ col: i % 10, row: Math.floor(i / 10) });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function log(msg, cls = 's') {
@@ -243,15 +244,8 @@ function findGroups() {
 }
 
 function applyGravityAndRefill() {
-  // 横向重力:每行内,空位从 col 0 方向补(右侧方块"往右推")
-  // 简化:整盘重排 — 收集非空方块,从右到左填充
-  const filled = state.board.filter(b => b !== null && b !== undefined);
-  for (let i = 0; i < 40; i++) state.board[i] = null;
-  // 从右到左填充(保留方块)
-  for (let i = 39, j = filled.length - 1; i >= 0 && j >= 0; i--, j--) {
-    state.board[i] = filled[j];
-  }
-  // 补充新方块(从左侧)
+  // 常见三消逻辑:消除的位置补新方块,其他位置保持不动
+  // (重力方向影响视觉,数据层只看"补空位")
   for (let i = 0; i < 40; i++) {
     if (state.board[i] === null) state.board[i] = makeBlock(randSlot());
   }
@@ -397,6 +391,7 @@ async function enemyTurn() {
   }
   state.player.hp = Math.max(0, state.player.hp - dmg);
   log(`敌人 ${atk.name} → 玩家 -${dmg} HP (${state.player.hp}/${state.player.hp_max})`, 'e');
+  updateUI();
   if (state.player.hp === 0) {
     state.turn = 'battle_end';
     log('★ 玩家死亡!', 's');
