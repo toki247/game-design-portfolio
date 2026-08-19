@@ -1,0 +1,52 @@
+{
+  "boss": {
+    "max_hp": 3,
+    "teleport_duration": 0.3,
+    "teleport_count_threshold": 2,
+    "hit_stun_duration": 1.5
+  },
+  "magic_ball": {
+    "chant_duration": 1.5,
+    "speed": 200.0,
+    "lifetime": 3.0,
+    "inertia_distance": 96.0,
+    "cd": 5.0
+  },
+  "laser": {
+    "charge_duration": 2.0,
+    "pre_fire_delay": 0.5,
+    "fire_duration": 2.0,
+    "width": 32.0,
+    "cd": 2.0,
+    "hit_cooldown": 0.3
+  },
+  "shockwave": {
+    "chant_duration": 2.0,
+    "ring_width": 32.0,
+    "max_radius": 240.0,
+    "expand_speed": 200.0,
+    "lifetime": 10.0,
+    "cd": 3.0,
+    "hit_cooldown": 0.3
+  },
+  "darkness": {
+    "radius": 64.0,
+    "hit_stun_duration": 1.5
+  },
+  "arena": {
+    "width_tiles": 70,
+    "height_tiles": 50,
+    "teleport_positions": [
+      [10, 12],
+      [60, 12],
+      [10, 38],
+      [60, 38],
+      [35, 25]
+    ]
+  },
+  "player": {
+    "attack_range": 64,
+    "attack_angle": 90,
+    "shield_break_stamina_per_damage": 1.0
+  }
+}

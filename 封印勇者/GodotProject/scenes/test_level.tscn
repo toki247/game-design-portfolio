@@ -1,0 +1,54 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="2_hud"]
+
+[sub_resource type="RectangleShape2D" id="Rect_player"]
+size = Vector2(16, 16)
+
+[sub_resource type="RectangleShape2D" id="Rect_floor"]
+size = Vector2(2000, 64)
+
+[node name="TestLevel" type="Node2D"]
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(640, 680)
+
+[node name="FloorShape" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("Rect_floor")
+
+[node name="ColorRectFloor" type="ColorRect" parent="."]
+offset_left = -360.0
+offset_top = 648.0
+offset_right = 1640.0
+offset_bottom = 712.0
+color = Color(0.4, 0.4, 0.4, 1)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(640, 608)
+script = ExtResource("1_player")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+transform = Transform2D(1, 0.5, -0.5, 0.5, 0, 0)
+current = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("Rect_player")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("2_hud")
+
+[node name="HPContainer" type="HBoxContainer" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 60.0
+
+[node name="HPLabel" type="Label" parent="HUD/HPContainer"]
+text = "HP: 5 / 5"
+
+[node name="AbilityContainer" type="HBoxContainer" parent="HUD"]
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 600.0
+offset_bottom = 100.0

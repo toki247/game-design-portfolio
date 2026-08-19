@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/game_setup.gd" id="1_setup"]
+[ext_resource type="PackedScene" path="res://scenes/boss_arena.tscn" id="2_boss"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_setup")
+
+[node name="BossArena" parent="." instance=ExtResource("2_boss")]
+
+[node name="SetupRef" type="Node" parent="."]

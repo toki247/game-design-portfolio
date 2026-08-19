@@ -1,0 +1,16 @@
+# UE 工程编译产物(只对本工程生效)
+/Binaries/
+/Intermediate/
+/Saved/
+/DerivedDataCache/
+/.vs/
+
+# Visual Studio 临时文件
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+*.xcodeproj/
+*.xcworkspace/
