@@ -211,3 +211,12 @@ Type: project
 - user.md / MEMORY.md 已同步更新到 8-11 方向(2026-08-11 pull memory 时)
 
 **三消回合制肉鸽 demo 仍保留**(2026-08-03 启动,自己玩,非作品集,8-11 方向不替换也不冲突)
+
+### GDD 参考案例 (2026-08-24)
+Type: reference
+
+公开的 GDD 模板 / 案例,跨项目写策划案时参考:
+
+1. [PaperStar/GDD](https://github.com/PaperStar/GDD) — 中文完整工作示例"纸飞机的星际冒险"
+2. [The Complete GDD Template (ludessy.com)](https://ludessy.com/blog/complete-game-design-document-template/) — 英文 6 段模板 + The Cinder Crown 工作示例 + 常见错误
+3. [Solo Dev GDD 模板 (dev.to)](https://dev.to/vincentchabran/a-game-design-document-template-sized-for-solo-devs-not-aaa-studios-3o2e) — 英文 solo 专用 11 段,1 文档可填完
