@@ -39,3 +39,8 @@ dist/
 封印勇者/GodotProject/.godot/
 封印勇者/GodotProject/.import/
 封印勇者/**/*.uid
+
+# Godot 临时文件 / 缓存(maze-tbs 项目,2026-08-25)
+maze-tbs/GodotProject/.godot/
+maze-tbs/GodotProject/.import/
+maze-tbs/**/*.uid
