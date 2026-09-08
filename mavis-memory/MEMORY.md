@@ -93,7 +93,9 @@ Type: project
   3. 流程:Godot 内置场景编辑器 + TileMap + AnimationPlayer Timeline + Signal
 - 保持代码可拓展性,后续经常修改的参数全部走 Resource + @export
 
-### Mavis session workspace → D 盘作品集同步流程(2026-06-30)
+### ~~Mavis session workspace → D 盘作品集同步流程(2026-06-30)~~ 已废止 2026-09-08
+> 旧流程的"Mavis workspace 写新版本 → shutil.copy2 到 D 盘 → git add + commit + push"**步骤本身仍有效**。废止的只是"跨设备 memory 同步"部分。
+> 完整新流程见本文件下方"### Mavis memory 同步流程(2026-09-08,覆盖 6-30 旧版)"。
 Type: config
 - Mavis workspace:`C:\Users\Admin\.mavis\sessions\<session_id>\workspace\`
 - 作品集(家里 + 公司):`D:\portfolio\`(用户统一改名前是 `D:\作品集\`)
@@ -104,7 +106,9 @@ Type: config
 - 公司电脑接入:`git@github.com:toki247/game-design-portfolio.git`(SSH)
 - D 盘 GDD / 骨架文件命名:中文文件名,可以正常工作
 
-### "Mavis,pull 一下 memory" 工作流升级(2026-06-30)
+### ~~"Mavis,pull 一下 memory" 工作流升级(2026-06-30)~~ 已废止 2026-09-08
+> 6-30 旧版假定 `~/.mavis/memory` 和 `~/.mavis/agents/mavis/memory` 是两个 sparse-checkout 仓库——**这两个目录实际上从来不是 git 仓库**,sparse-checkout 从未配置过。
+> 真实机制(见本文件下方 9-08 新流程):mavis-memory 是作品集仓库的子目录,Mavis 手动 cp 到本地 + 更新 `.last-sync`。
 Type: config
 3 步流程(用户每次跨设备时运行):
 ```powershell
@@ -220,3 +224,47 @@ Type: reference
 1. [PaperStar/GDD](https://github.com/PaperStar/GDD) — 中文完整工作示例"纸飞机的星际冒险"
 2. [The Complete GDD Template (ludessy.com)](https://ludessy.com/blog/complete-game-design-document-template/) — 英文 6 段模板 + The Cinder Crown 工作示例 + 常见错误
 3. [Solo Dev GDD 模板 (dev.to)](https://dev.to/vincentchabran/a-game-design-document-template-sized-for-solo-devs-not-aaa-studios-3o2e) — 英文 solo 专用 11 段,1 文档可填完
+### Mavis memory 同步流程(2026-09-08,覆盖 6-30 旧版)
+Type: config
+
+**真仓库**: `D:\portfolio\game-design-portfolio` (单仓库,无 submodule)
+**仓库内** `mavis-memory/` 目录: `user.md` / `MEMORY.md` / `README.md` / `.last-sync`
+**Mavis 运行时读**(三份 SHA256 始终一致,9-08 验证):
+- `C:\Users\admin\.minimax\agents\mavis\memory\MEMORY.md` (activeDataDir)
+- `C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md` (home, 仓库源)
+- `D:\portfolio\game-design-portfolio\mavis-memory\MEMORY.md` (git 仓库内)
+
+**Pull**(用户每天早 / 晚跑一次):
+```powershell
+cd D:\portfolio\game-design-portfolio
+git pull origin main
+Copy-Item -Path mavis-memory\user.md -Destination C:\Users\admin\.mavis\memory\user.md -Force
+Copy-Item -Path mavis-memory\MEMORY.md -Destination C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Force
+$ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss zzz'
+Set-Content -Path mavis-memory\.last-sync -Value $ts -Encoding utf8
+```
+
+**Push**(改完 user.md / MEMORY.md 后跑):
+```powershell
+# 1. 改本地(Mavis memory 工具或直接编辑 home 下的文件)
+# 2. cp 到仓库
+Copy-Item -Path C:\Users\admin\.mavis\memory\user.md -Destination D:\portfolio\game-design-portfolio\mavis-memory\user.md -Force
+Copy-Item -Path C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Destination D:\portfolio\game-design-portfolio\mavis-memory\MEMORY.md -Force
+# 3. 更新 .last-sync + commit + push
+cd D:\portfolio\game-design-portfolio
+$ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss zzz'
+Set-Content -Path mavis-memory\.last-sync -Value $ts -Encoding utf8
+git add mavis-memory/
+git commit -m "docs(memory): sync $(Get-Date -Format 'MM-dd HH:mm')"
+git push origin main
+```
+
+**6-30 旧流程已废止**:
+- ❌ `~/.mavis/memory` / `~/.mavis/agents/mavis/memory` 都不是 git 仓库,sparse-checkout 从未配置
+- ❌ "两个独立 git 仓库"方案从未实现
+- ✅ 统一用单作品集仓库 + cp 方案
+
+**注意**:
+- `.last-sync` 是仓库内的本地状态文件,已加入 `.gitignore`(`# mavis memory 工具同步标记`),不提交
+- 8-20 10:31 之后没更新过——9-08 09:49 第一次补上,以后每次 pull/push 都要改
+- 9-08 09:49 拉到 c4cc722(Mavis 凌晨自动 commit 的 GDD 改动),pull 流程验证通过
