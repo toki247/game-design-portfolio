@@ -46,7 +46,7 @@
 - 文档版本:docx(跟哈迪斯 2 拆解对齐)
 
 ### 详细规划文件
-- 单源真相:`D:\portfolio\game-design-portfolio\portfolio-plan-2026-08-11.md`
+- 单源真相:`D:\portfolio\portfolio-plan-2026-08-11.md`
 - 下一步(2026-08-12 公司):决定系统思维练习的**选品 + 选系统**
 
 ### 7-27 21:19 最终版(已校准,仅供回溯)
@@ -197,7 +197,7 @@
   - 用户工作模式:**整合简化模板 + 填补缺口**,Mavis 角色:**指出缺口 + 给出串联逻辑**
   - Mavis 工具栈踩坑:Windows 沙箱 python 不在 PATH;**唯一靠谱的 xlsx 读取路径是 node + 手写 zip 解压**
 - **2026-06-30**(本轮对话):
-  1. **公司电脑接入 GitHub 作品集仓库**:`D:\portfolio\game-design-portfolio`,SSH 协议已配(`git@github.com:toki247/game-design-portfolio.git`)
+  1. **公司电脑接入 GitHub 作品集仓库**:`D:\portfolio`,SSH 协议已配(`git@github.com:toki247/game-design-portfolio.git`)
   2. **作品集策略升级**:
      - 一击必杀机制:**暂时删掉**(可能后续融入封印勇者)
      - 反常识勇者 demo → **改名"封印勇者 demo"**
@@ -276,17 +276,17 @@
   6. **节奏不变**:10-12h/周(工作日 30-60min + 周末 3-4h)
   7. **公司电脑规则不变**:❌ 不做 UE / BT / 作品集相关具体动作;✅ 可做非 UE 方向代码学习 + MH 运营
   8. **下一步**(2026-08-12 公司):决定系统思维练习的**选品 + 选系统**
-  9. **单源真相**:`D:\portfolio\game-design-portfolio\portfolio-plan-2026-08-11.md`(106 行,详细规划)
+  9. **单源真相**:`D:\portfolio\portfolio-plan-2026-08-11.md`(106 行,详细规划)
   10. **三消回合制肉鸽 demo 仍保留**(2026-08-03 启动,自己玩,非作品集,新方向不替换也不冲突)
 
 ## 项目轨道(2026-07-27 21:19 调整 → 2026-08-11 校准作品集方向,务必分开管理)
 用户的并行项目要**严格分开**,不要交叉、迁移或联想:
 - 🔧 **MH 运营工作**(当前 + 公司电脑 `D:\OPS-MH`)—— 翻译邮件、活动文案、活动节奏等日常运营事务;创建的技能归 `~/.mavis/agents/mavis/skills/`,仅服务这条线
-- 🎮 **系统策划作品集**(当前 + 公司电脑 `D:\portfolio\game-design-portfolio`,2026-08-11 校准)—— 主线系统视角(哈迪斯 2 拆解升级为系统视角 + 1 个完整战斗系统设计 demo + GDD 模板 + Notion 作品集页);**公司电脑已改装 UE**(技术参考保留,非主线)
+- 🎮 **系统策划作品集**(当前 + 公司电脑 `D:\portfolio`,2026-08-11 校准)—— 主线系统视角(哈迪斯 2 拆解升级为系统视角 + 1 个完整战斗系统设计 demo + GDD 模板 + Notion 作品集页);**公司电脑已改装 UE**(技术参考保留,非主线)
 
 **⚠️ 同一台公司电脑跑两条线**,严格按目录区分,不要混操作:
 - MH 运营工作 → 入口 `D:\OPS-MH`(multi-lang-email / 活动物料 / xlsx 改时区 等)
-- 作品集 → 入口 `D:\portfolio\game-design-portfolio`(Git 仓库,demo 工程放里面)
+- 作品集 → 入口 `D:\portfolio`(Git 仓库,demo 工程放里面)
 
 **触发冲突场景**:当用户说"这跟 X 项目有关"或"这是我那个 Y 工作的内容"时,立即确认属于哪个轨道,不要默认混到一起。
 反例:把"运营工作里学到的活动设计"硬塞进系统作品集叙事 → 不主动推动,让用户自己决定是否借用(虽然 8-11 方向下活动/商业化是辅助,但轨道分离原则不变)。
@@ -313,7 +313,7 @@ Type: preference
 ### 公司电脑不作品集相关 (2026-07-28)
 Type: preference
 
-**公司时间(公司电脑 `D:\portfolio\game-design-portfolio`)不做 3D 作品集相关的事**,包括但不限于:
+**公司时间(公司电脑 `D:\portfolio`)不做 3D 作品集相关的事**,包括但不限于:
 - UE 起步(模板/工程/启动器等)
 - 读 BehaviorTree 文档 / 写 BP / C++
 - 哈迪斯 2 拆解更新
@@ -416,11 +416,11 @@ Type: preference
 - ✅ MH 运营(本职)
 
 **新规则**(8-21 起生效):
-- 公司时间(公司电脑 `D:\portfolio\game-design-portfolio`)想到什么就做什么
+- 公司时间(公司电脑 `D:\portfolio`)想到什么就做什么
 - 想到 demo 机制 / 写 GDD / 编 UE 工程 / commit,公司时间都可以,不用等周末
 - 节奏不再严格区分工作日 vs 周末
 
 **仍有效的规则**:
 - 8-11 校准"先做出第一版再说"(防止再开新方向的诱惑)— **保留**
 - Mavis 角色:不主动出学习路径 / 内容太多不发散 / 想到什么再做什么 — 保留
-- 公司电脑跟 MH 运营分开(`D:\OPS-MH` vs `D:\portfolio\game-design-portfolio`)— 保留
+- 公司电脑跟 MH 运营分开(`D:\OPS-MH` vs `D:\portfolio`)— 保留

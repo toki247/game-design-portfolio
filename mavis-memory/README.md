@@ -21,7 +21,7 @@
 ### Pull(早上到公司 / 晚上回家)
 
 ```powershell
-cd D:\portfolio\game-design-portfolio
+cd D:\portfolio
 git pull origin main
 Copy-Item -Path mavis-memory\user.md -Destination C:\Users\admin\.mavis\memory\user.md -Force
 Copy-Item -Path mavis-memory\MEMORY.md -Destination C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Force
@@ -34,10 +34,10 @@ Set-Content -Path mavis-memory\.last-sync -Value $ts -Encoding utf8
 ```powershell
 # 1. 改本地(Mavis memory 工具或直接编辑 home 下的文件)
 # 2. cp 到仓库
-Copy-Item -Path C:\Users\admin\.mavis\memory\user.md -Destination D:\portfolio\game-design-portfolio\mavis-memory\user.md -Force
-Copy-Item -Path C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Destination D:\portfolio\game-design-portfolio\mavis-memory\MEMORY.md -Force
+Copy-Item -Path C:\Users\admin\.mavis\memory\user.md -Destination D:\portfolio\mavis-memory\user.md -Force
+Copy-Item -Path C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Destination D:\portfolio\mavis-memory\MEMORY.md -Force
 # 3. 更新 .last-sync + commit + push
-cd D:\portfolio\game-design-portfolio
+cd D:\portfolio
 $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss zzz'
 Set-Content -Path mavis-memory\.last-sync -Value $ts -Encoding utf8
 git add mavis-memory/

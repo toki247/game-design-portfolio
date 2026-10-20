@@ -211,7 +211,7 @@ Type: project
 **下一步**(2026-08-12 公司): 决定系统思维练习的**选品 + 选系统**
 
 **单源真相**:
-- 详细规划:`D:\portfolio\game-design-portfolio\portfolio-plan-2026-08-11.md`(106 行)
+- 详细规划:`D:\portfolio\portfolio-plan-2026-08-11.md`(106 行)
 - user.md / MEMORY.md 已同步更新到 8-11 方向(2026-08-11 pull memory 时)
 
 **三消回合制肉鸽 demo 仍保留**(2026-08-03 启动,自己玩,非作品集,8-11 方向不替换也不冲突)
@@ -227,16 +227,16 @@ Type: reference
 ### Mavis memory 同步流程(2026-09-08,覆盖 6-30 旧版)
 Type: config
 
-**真仓库**: `D:\portfolio\game-design-portfolio` (单仓库,无 submodule)
+**真仓库**: `D:\portfolio` (单仓库,无 submodule)
 **仓库内** `mavis-memory/` 目录: `user.md` / `MEMORY.md` / `README.md` / `.last-sync`
 **Mavis 运行时读**(三份 SHA256 始终一致,9-08 验证):
 - `C:\Users\admin\.minimax\agents\mavis\memory\MEMORY.md` (activeDataDir)
 - `C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md` (home, 仓库源)
-- `D:\portfolio\game-design-portfolio\mavis-memory\MEMORY.md` (git 仓库内)
+- `D:\portfolio\mavis-memory\MEMORY.md` (git 仓库内)
 
 **Pull**(用户每天早 / 晚跑一次):
 ```powershell
-cd D:\portfolio\game-design-portfolio
+cd D:\portfolio
 git pull origin main
 Copy-Item -Path mavis-memory\user.md -Destination C:\Users\admin\.mavis\memory\user.md -Force
 Copy-Item -Path mavis-memory\MEMORY.md -Destination C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Force
@@ -248,10 +248,10 @@ Set-Content -Path mavis-memory\.last-sync -Value $ts -Encoding utf8
 ```powershell
 # 1. 改本地(Mavis memory 工具或直接编辑 home 下的文件)
 # 2. cp 到仓库
-Copy-Item -Path C:\Users\admin\.mavis\memory\user.md -Destination D:\portfolio\game-design-portfolio\mavis-memory\user.md -Force
-Copy-Item -Path C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Destination D:\portfolio\game-design-portfolio\mavis-memory\MEMORY.md -Force
+Copy-Item -Path C:\Users\admin\.mavis\memory\user.md -Destination D:\portfolio\mavis-memory\user.md -Force
+Copy-Item -Path C:\Users\admin\.mavis\agents\mavis\memory\MEMORY.md -Destination D:\portfolio\mavis-memory\MEMORY.md -Force
 # 3. 更新 .last-sync + commit + push
-cd D:\portfolio\game-design-portfolio
+cd D:\portfolio
 $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss zzz'
 Set-Content -Path mavis-memory\.last-sync -Value $ts -Encoding utf8
 git add mavis-memory/
@@ -271,7 +271,7 @@ git push origin main
 ### Maid RPG 项目启动 (2026-10-20)
 Type: project
 
-**项目位置**:`D:\portfolio\game-design-portfolio\projects\maid-rpg\idea.md`(git 仓库内,commit `0ff0257` 已 push)
+**项目位置**:`D:\portfolio\projects\maid-rpg\idea.md`(git 仓库内,commit `0ff0257` 已 push)
 
 **状态**:**第 1-6 步锁定 + 13/18 模块已设计**
 
@@ -307,4 +307,4 @@ Type: project
 - 美术素材方案(2D 像素?自画 / AI 生成 / 找资源?)
 - 回家起 Godot 工程 + 边搭边聊
 
-**冲突场景提醒**:跟 MH 运营、8-21 公司电脑工作模式都不冲突,但**严格按目录区分**(D:\OPS-MH vs D:\portfolio\game-design-portfolio\projects\maid-rpg\)
+**冲突场景提醒**:跟 MH 运营、8-21 公司电脑工作模式都不冲突,但**严格按目录区分**(D:\OPS-MH vs D:\portfolio\projects\maid-rpg\)
