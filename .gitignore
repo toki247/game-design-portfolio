@@ -35,6 +35,9 @@ dist/
 # mavis memory 工具同步标记(本地状态，不提交)
 .last-sync
 
+# 本机一次性脚本(硬编码本机绝对路径,不进仓库)
+_sync_memory.py
+
 # Godot 临时文件 / 缓存(封印勇者项目)
 封印勇者/GodotProject/.godot/
 封印勇者/GodotProject/.import/
