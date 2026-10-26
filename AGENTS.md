@@ -22,7 +22,7 @@
 
 ### 启动步骤(切到本 session 继续时)
 
-1. workspace 已是 `D:\portfolio\game-design-portfolio`
+1. workspace = 仓库根,用 `git rev-parse --show-toplevel` 确认(本机 `D:\portfolio`;另一台机器可能是 `D:\portfolio\game-design-portfolio`)
 2. 在 chat 里说"做 portfolio-overview mini app"
 3. Mavis 会:读这份 AGENTS.md → `miniapp init` → 写 client → `publish` → 给 URL
 
