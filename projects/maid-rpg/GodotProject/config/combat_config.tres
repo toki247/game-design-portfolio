@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/combat_config.gd" id="1_combat_config"]
+
+[resource]
+script = ExtResource("1_combat_config")
+action_gauge_max = 1000
+action_gauge_speed_mult = 2.0
+tick_interval = 0.2
+action_gauge_min_speed = 1.0
+k_damage_reduction = 100.0
+k_escape = 100.0
+broken_damage_mult = 1.5
+crit_damage_mult = 1.5
+barrier_defense_mult = 5.0
+shield_max_ratio = 1.0
+tenacity_coefficient = 1.0
+strong_mode_max_turns = 5
+strong_exit_hp_ratio = 0.1

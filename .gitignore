@@ -47,3 +47,8 @@ _sync_memory.py
 maze-tbs/GodotProject/.godot/
 maze-tbs/GodotProject/.import/
 maze-tbs/**/*.uid
+
+# Godot 临时文件 / 缓存(maid-rpg 项目,2026-10-26)
+projects/maid-rpg/GodotProject/.godot/
+projects/maid-rpg/GodotProject/.import/
+projects/maid-rpg/**/*.uid

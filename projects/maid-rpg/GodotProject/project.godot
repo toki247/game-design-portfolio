@@ -1,0 +1,33 @@
+; Maid RPG — Godot 工程配置
+; 规则见 projects/maid-rpg/系统规格书.md §1(Godot 工程结构)
+; 数值全走 config/*.tres(05-数值与配置.md §0 铁律 1)
+
+config_version=5
+
+[application]
+
+config/name="Maid RPG"
+config/description="赛博朋克机械女仆 — 回合制 RPG(原型)"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameData="*res://scripts/autoload/game_data.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[layer_names]
+
+2d_render/layer_1="player"
+2d_render/layer_2="enemy"
+2d_render/layer_3="ui"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
