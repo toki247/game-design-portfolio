@@ -7,7 +7,7 @@ extends SceneTree
 ## 覆盖:
 ##   S1 配置能加载(.tres 数值正确)
 ##   S2 属性公式对齐 02-系统设计.md §1.9
-##   S3 行动条:跑条速度 / 溢出清零 / 并列玩家先动 / 速度 0 不卡死
+##   S3 行动条:跑条速度 / 溢出清零 / 并列玩家先动 / 行动速度 0 不卡死
 
 const CONFIG_PATH := "res://config/combat_config.tres"
 
@@ -18,6 +18,7 @@ func _initialize() -> void:
 	print("=== Maid RPG 核心层自测(S1 / S2 / S3) ===")
 	_test_config_load()
 	_test_stats_formula()
+	_test_action_speed_decoupled()
 	_test_defense_pierce()
 	_test_gauge_single_unit()
 	_test_gauge_two_units()
@@ -51,20 +52,40 @@ func _test_stats_formula() -> void:
 	var u := _make_unit(true, 10.0)
 	u.physique = 50.0
 	u.strength = 20.0
+	u.speed = 10.0
 	u.agility = 10.0
 	u.luck = 10.0
+	u.action_speed = 10.0
 	u.weapon_attack = 5.0
 	var s := StatsCalc.derive(u, cfg)
 	_check("HP = 体格 × 2", s.max_hp, 100.0)
 	_check("攻击力 = 力量 + 武器攻击", s.attack, 25.0)
 	_check("防御 = 体格", s.defense, 50.0)
-	_check("行动条速度 = 速度 × 2", s.action_gauge_speed, 20.0)
+	_check("行动条速度 = 行动速度 × 2", s.action_gauge_speed, 20.0)
 	_check("闪避率 = ceil((幸运+速度)/2)", s.evasion_pct, 10.0)
 	_check("暴击率 = (技巧+幸运)/2", s.crit_pct, 10.0)
 	_check("减伤率 = 防御/(防御+K)", s.damage_reduction_pct, 50.0 / 150.0 * 100.0)
 	_check("招架率 = 闪避率 + 减伤率", s.parry_pct, 10.0 + 50.0 / 150.0 * 100.0)
 	_check("屏障最大值 = 防御 × 5", s.barrier_max, 250.0)
 	_check("暴击伤害倍率", s.crit_damage_mult, 1.5)
+
+func _test_action_speed_decoupled() -> void:
+	print("[S2] 行动速度与战斗速度解耦(已定 15)")
+	var cfg := load(CONFIG_PATH) as CombatConfig
+	var u := _make_unit(true, 100.0, 20.0)
+	var s := StatsCalc.derive(u, cfg)
+	_check("行动条速度 = 行动速度 × 2", s.action_gauge_speed, 200.0)
+	_check("闪避率 = ceil((幸运+速度)/2)", s.evasion_pct, 15.0)
+	# 战斗速度翻倍 → 行动条速度纹丝不动
+	u.speed = 40.0
+	var s2 := StatsCalc.derive(u, cfg)
+	_check("战斗速度翻倍,行动条速度不变", s2.action_gauge_speed, 200.0)
+	_check("战斗速度翻倍,闪避率跟着变", s2.evasion_pct, 25.0)
+	# 行动速度翻倍 → 闪避率纹丝不动
+	u.action_speed = 200.0
+	var s3 := StatsCalc.derive(u, cfg)
+	_check("行动速度翻倍,闪避率不变", s3.evasion_pct, 25.0)
+	_check("行动速度翻倍,行动条速度翻倍", s3.action_gauge_speed, 400.0)
 
 func _test_defense_pierce() -> void:
 	print("[S2] 防御穿透 = 减法扣有效防御(已定 13)")
@@ -75,7 +96,7 @@ func _test_defense_pierce() -> void:
 # --- S3 行动条 ---
 
 func _test_gauge_single_unit() -> void:
-	print("[S3] 跑条速度基准(速度 100 ≈ 5 秒,速度 50 ≈ 10 秒)")
+	print("[S3] 跑条速度基准(行动速度 100 ≈ 5 秒,行动速度 50 ≈ 10 秒)")
 	var cfg := load(CONFIG_PATH) as CombatConfig
 
 	# 速度 100 → 每 tick +40 → 25 tick = 5.0 秒
@@ -88,8 +109,8 @@ func _test_gauge_single_unit() -> void:
 		if bs1.step() != null:
 			first_action_tick = bs1.tick_count
 			break
-	_check("速度 100 第一次行动在第 25 个 tick", first_action_tick, 25)
-	_check("速度 100 第一次行动用时 5.0 秒", first_action_tick * cfg.tick_interval, 5.0)
+	_check("行动速度 100 第一次行动在第 25 个 tick", first_action_tick, 25)
+	_check("行动速度 100 第一次行动用时 5.0 秒", first_action_tick * cfg.tick_interval, 5.0)
 
 	# 速度 50 → 每 tick +20 → 50 tick = 10.0 秒
 	var slow := _make_unit(true, 50.0)
@@ -101,11 +122,11 @@ func _test_gauge_single_unit() -> void:
 		if bs2.step() != null:
 			first_action_tick = bs2.tick_count
 			break
-	_check("速度 50 第一次行动在第 50 个 tick", first_action_tick, 50)
-	_check("速度 50 第一次行动用时 10.0 秒", first_action_tick * cfg.tick_interval, 10.0)
+	_check("行动速度 50 第一次行动在第 50 个 tick", first_action_tick, 50)
+	_check("行动速度 50 第一次行动用时 10.0 秒", first_action_tick * cfg.tick_interval, 10.0)
 
 func _test_gauge_two_units() -> void:
-	print("[S3] 不同速度 → 行动顺序")
+	print("[S3] 不同行动速度 → 行动顺序")
 	var cfg := load(CONFIG_PATH) as CombatConfig
 	var player := _make_unit(true, 100.0)
 	var enemy := _make_unit(false, 80.0)
@@ -171,7 +192,7 @@ func _test_overflow_clear() -> void:
 	_check("累计行动 2 次", bs.action_log.size(), 2)
 
 func _test_zero_speed_not_stuck() -> void:
-	print("[S3] 速度 0 不卡死(跑速下限)")
+	print("[S3] 行动速度 0 不卡死(跑速下限)")
 	var cfg := load(CONFIG_PATH) as CombatConfig
 	var u := _make_unit(false, 0.0)
 	_check("跑条速度 = 下限 1 条/秒", ActionGauge.gauge_speed(u, cfg), 1.0)
@@ -184,16 +205,18 @@ func _test_zero_speed_not_stuck() -> void:
 
 # --- 工具 ---
 
-func _make_unit(is_player: bool, spd: float) -> UnitState:
+func _make_unit(is_player: bool, action_speed: float, combat_speed: float = 20.0) -> UnitState:
 	var u := UnitState.new()
 	u.id = &"player" if is_player else &"enemy"
 	u.display_name = "玩家" if is_player else "敌人"
 	u.is_player = is_player
 	u.physique = 50.0
 	u.strength = 20.0
-	u.speed = spd
+	# 战斗速度(只影响闪避率 / 逃跑)与行动速度(只影响行动条)是两个独立数值
+	u.speed = combat_speed
 	u.agility = 10.0
 	u.luck = 10.0
+	u.action_speed = action_speed
 	u.hp = 100.0
 	u.max_hp = 100.0
 	return u

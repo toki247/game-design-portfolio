@@ -13,6 +13,11 @@ extends Resource
 @export var agility: float = 10.0
 @export var luck: float = 10.0
 
+@export_group("行动速度")
+## 行动速度 —— **只用于行动条行进**,与 5 属性里的【速度】完全剥离(已定 15)
+## 基准:100 → 约 5 秒一次行动(05 §5)
+@export var action_speed: float = 100.0
+
 @export_group("装备 / 技能")
 @export var weapon_attack: float = 0.0
 @export var skills: Array[SkillData] = []

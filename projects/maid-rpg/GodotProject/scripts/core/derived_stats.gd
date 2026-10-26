@@ -13,7 +13,8 @@ var max_hp: float = 0.0
 var attack: float = 0.0
 ## 防御 = 体格
 var defense: float = 0.0
-## 行动条速度(条/秒)= 速度 × action_gauge_speed_mult
+## 行动条速度(条/秒)= 行动速度 × action_gauge_speed_mult
+## ⚠️ 注意区分:【行动速度】是输入数值,【行动条速度】是它的派生结果
 var action_gauge_speed: float = 0.0
 
 @export_group("率(百分数点)")

@@ -11,11 +11,11 @@ extends Resource
 @export_group("行动条")
 ## 行动条满值(条)
 @export var action_gauge_max: int = 1000
-## 行动条速度 = 速度属性 × 此值(条/秒)
+## 行动条速度 = 行动速度 × 此值(条/秒)
 @export var action_gauge_speed_mult: float = 2.0
 ## tick 间隔(秒)—— 行动条每 0.2s 结算一次
 @export var tick_interval: float = 0.2
-## 跑条速度下限(条/秒)—— 速度被减到 0 时保底,避免永远不动(05 §4 #8)
+## 跑条速度下限(条/秒)—— 行动速度被减到 0 时保底,避免永远不动(05 §4 #8)
 @export var action_gauge_min_speed: float = 1.0
 
 @export_group("减伤 / 招架")

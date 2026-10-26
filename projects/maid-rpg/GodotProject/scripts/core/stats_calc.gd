@@ -8,7 +8,7 @@ extends RefCounted
 ##   HP         = 体格 × 2
 ##   攻击力     = 力量 + 武器攻击 + buff
 ##   防御       = 体格
-##   行动条速度 = 速度 × 2
+##   行动条速度 = 行动速度 × 2
 ##   闪避率     = (幸运 + 速度) / 2(向上取整)
 ##   暴击率     = (技巧 + 幸运) / 2
 ##   暴击伤害   = × 1.5
@@ -27,7 +27,7 @@ static func derive(unit: UnitState, config: CombatConfig) -> DerivedStats:
 	s.max_hp = unit.physique * 2.0
 	s.attack = unit.strength + unit.weapon_attack + unit.attack_buff
 	s.defense = unit.physique
-	s.action_gauge_speed = unit.speed * config.action_gauge_speed_mult
+	s.action_gauge_speed = unit.action_speed * config.action_gauge_speed_mult
 
 	# 闪避率 = (幸运 + 速度) / 2,向上取整
 	s.evasion_pct = float(ceili((unit.luck + unit.speed) / 2.0))
@@ -57,6 +57,12 @@ static func effective_defense(defense: float, pierce: float) -> float:
 	return maxf(defense - pierce, 0.0)
 
 ## 命中率(百分数点)= 技巧 + 技能命中加成 − 对方闪避率
+##
+## ⚠️ **量纲待定(05 §4 #16)**:技巧是点数、闪避率是百分点,两者直接相减口径不一致
+##    (技巧 20 − 闪避率 15 = 5,命中率会低到打不中人)。
+##    当前按设计文档原式实现,**暂定方案**是把「基础命中率」做成配置项:
+##      命中率 = 基础命中率 + 技巧 − 对方闪避率
+##    等用户拍板后再改公式 —— 数值全走配置,推翻的成本很低。
 static func hit_pct(attacker: UnitState, target_stats: DerivedStats, skill_bonus: float = 0.0) -> float:
 	if attacker == null or target_stats == null:
 		return 0.0

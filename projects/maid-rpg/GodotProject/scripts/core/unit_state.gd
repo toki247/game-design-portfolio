@@ -25,6 +25,11 @@ var agility: float = 0.0
 ## 幸运
 var luck: float = 0.0
 
+@export_group("行动速度")
+## 行动速度 —— **只喂行动条**,与上面的【速度】完全剥离(已定 15)
+## 跑条速度 = 行动速度 × action_gauge_speed_mult
+var action_speed: float = 0.0
+
 @export_group("装备 / 外部加成")
 ## 武器攻击(攻击力 = 力量 + 武器攻击 + buff)
 var weapon_attack: float = 0.0

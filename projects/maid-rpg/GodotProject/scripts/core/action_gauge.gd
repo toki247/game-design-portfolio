@@ -4,21 +4,21 @@ extends RefCounted
 ##
 ## 规则:
 ##   满值     = 1000
-##   跑条速度 = 速度 × 2(条/秒)
+##   跑条速度 = 行动速度 × 2(条/秒)
 ##   计算频率 = 每 0.2 秒一次 tick
 ##   并列     = 同时满条时玩家先动
 ##   溢出     = 行动后清零(不保留溢出)
 ##
 ## 推进逻辑:
 ##   每 0.2s:
-##     所有单位 action_gauge += (速度 × 2) × 0.2
+##     所有单位 action_gauge += (行动速度 × 2) × 0.2
 ##     找出所有 action_gauge >= 1000 的单位
 ##     若有多个 → 玩家优先 → 该单位行动 → action_gauge = 0
 ##
 ## ⚠️ 实现层的三个坑(规格书 §3.1):
 ##   1. 溢出清零后死循环 —— 行动单位直接归 0,其它满条单位保留,下个 tick 依次行动,不会饿死
 ##   2. tick 精度 —— 用固定步长累加,不用 delta 直接乘
-##   3. 速度 0 卡死 —— 跑条速度设下限(见 config.action_gauge_min_speed)
+##   3. 行动速度 0 卡死 —— 跑条速度设下限(见 config.action_gauge_min_speed)
 
 ## 推进所有存活单位的行动条(固定步长 = config.tick_interval)
 static func advance(units: Array, config: CombatConfig) -> void:
@@ -28,9 +28,9 @@ static func advance(units: Array, config: CombatConfig) -> void:
 			continue
 		u.action_gauge += gauge_speed(u, config) * step
 
-## 跑条速度(条/秒),带下限 —— 速度被减到 0 时也不会永远不动
+## 跑条速度(条/秒),带下限 —— 行动速度被减到 0 时也不会永远不动
 static func gauge_speed(unit: UnitState, config: CombatConfig) -> float:
-	return maxf(unit.speed * config.action_gauge_speed_mult, config.action_gauge_min_speed)
+	return maxf(unit.action_speed * config.action_gauge_speed_mult, config.action_gauge_min_speed)
 
 ## 挑出本 tick 的行动者,没有则返回 null
 ##
