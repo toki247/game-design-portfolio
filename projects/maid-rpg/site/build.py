@@ -24,7 +24,7 @@ DIST = os.path.join(HERE, "dist")
 DOCS = [
     ("01-GDD", "① GDD", "01-GDD.md", "游戏总体设计",
      "定位 · 核心体验 · 核心玩法 · 核心循环 · 3C",
-     "✅ 定位 / 体验 / 3C 已定 · 🟡 核心循环待确认", "ok"),
+     "✅ 全部已定稿 · 核心循环 10-27 转正", "ok"),
     ("02-系统设计", "② 系统设计", "02-系统设计.md", "7 套系统 · 13 项策划案",
      "战斗 / 构筑 / 养成 / 改装 / 探索 / 对话 / 线索",
      "✅ 战斗系统完整 · 🔶 构筑框架 · 🔴 其余 5 套骨架", "part"),
@@ -362,6 +362,7 @@ td code{white-space:nowrap}
 .card b{display:block;font-size:15px;margin:6px 0 5px}
 .card span{display:block;color:var(--fg3);font-size:12.5px;line-height:1.6}
 .card .st{margin-top:10px;font-size:12px}
+.pagehead .st{margin-top:10px;font-size:12.5px}
 .st-ok{color:var(--acc2)}.st-part{color:var(--warn)}.st-weak{color:var(--bad)}.st-exec{color:var(--fg3)}
 .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11.5px;
   background:var(--bg3);border:1px solid var(--line);color:var(--fg2);margin-right:6px}
@@ -381,7 +382,7 @@ def nav_html(active):
     return "\n".join(rows)
 
 
-def page(key, title, kicker, desc, body, toc):
+def page(key, title, kicker, desc, body, toc, status="", cls="st-exec"):
     nav = "".join(
         '<a class="%s" href="%s.html"><i>%s</i>%s</a>' % (
             "on" if k == key else "", k, "", lbl)
@@ -392,6 +393,7 @@ def page(key, title, kicker, desc, body, toc):
             '<a class="l%d" href="#%s">%s</a>' % (lvl, aid, raw)
             for lvl, raw, aid in toc if lvl <= 3)
         toc_html = '<div class="toc"><b>本页目录</b>%s</div>' % items
+    st_html = ('<div class="st %s">%s</div>' % (cls, esc(status))) if status else ""
     return """<!DOCTYPE html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8">
@@ -409,6 +411,7 @@ def page(key, title, kicker, desc, body, toc):
     <div class="kicker">%s</div>
     <h1>%s</h1>
     <p>%s</p>
+    %s
   </div>
   %s
   <footer>Maid RPG 设计文档 · 赛博朋克 / 机械女仆 / 搞笑无厘头 · Godot · 独立开发<br>
@@ -416,19 +419,18 @@ def page(key, title, kicker, desc, body, toc):
 </main>
 </div>
 %s
-</body></html>""" % (esc(title), nav, esc(kicker), esc(title), desc, body, toc_html)
+</body></html>""" % (esc(title), nav, esc(kicker), esc(title), desc, st_html, body, toc_html)
 
 
 HERO = """
 <div class="hero">
   <h1>Maid RPG 设计文档</h1>
-  <p class="sub">回合制 RPG · 27 构筑 · 赛博朋克机械女仆 · Godot · 独立开发</p>
+  <p class="sub">回合制 RPG · 赛博朋克机械女仆 · 搞笑无厘头</p>
   <div class="meta">
-    <span class="pill acc">五层文档结构</span>
-    <span class="pill">全流程 1-2 小时</span>
+    <span class="pill acc">27 种构筑</span>
     <span class="pill">3 章节 × 1 地图</span>
-    <span class="pill">战斗系统设计完成</span>
-    <span class="pill">模块 18/18</span>
+    <span class="pill">全流程 1-2 小时</span>
+    <span class="pill">Godot · 独立开发</span>
   </div>
 </div>
 <div class="cards">
@@ -437,10 +439,10 @@ HERO = """
 """
 
 
-def card(key, kicker, name, desc, status, cls):
+def card(key, kicker, name, desc):
     return ('<a class="card" href="%s.html"><div class="lv">%s</div><b>%s</b>'
-            '<span>%s</span><div class="st %s">%s</div></a>'
-            % (key, esc(kicker), esc(name), esc(desc), cls, esc(status)))
+            '<span>%s</span></a>'
+            % (key, esc(kicker), esc(name), esc(desc)))
 
 
 def build():
@@ -455,7 +457,7 @@ def build():
     idx = io.open(os.path.join(SRC, "idea.md"), "r", encoding="utf-8", newline="").read()
     body, toc = md_to_html(idx)
     cards = "".join(
-        card(k, lbl, name, desc, status, cls)
+        card(k, lbl, name, desc)
         for k, lbl, _, name, desc, status, cls in DOCS)
     hero = HERO % cards
     # 去掉 idea.md 的 h1(首页 hero 已经承担)
@@ -470,7 +472,7 @@ def build():
         md = io.open(os.path.join(SRC, fname), "r", encoding="utf-8", newline="").read()
         body, toc = md_to_html(md)
         body = re.sub(r"^\s*<h1[^>]*>.*?</h1>\s*", "", body, count=1, flags=re.S)
-        html = page(key, name, lbl, desc, body, toc)
+        html = page(key, name, lbl, desc, body, toc, status, cls)
         io.open(os.path.join(DIST, key + ".html"), "w", encoding="utf-8", newline="").write(html)
         print("%s.html" % key)
 
