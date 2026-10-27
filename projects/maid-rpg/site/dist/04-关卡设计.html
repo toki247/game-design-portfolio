@@ -34,7 +34,7 @@
 <h2 id="3.-挑战配置">3. 挑战配置</h2>
 <blockquote>⚠️ <strong>本节空白</strong> —— 现在只有「这一章打什么怪」,没有「这一章玩家要面对什么挑战、难度怎么爬」。</blockquote>
 <p>每个战斗遭遇点应该配置的东西(建议模板):</p>
-<table><thead><tr><th>项</th><th>说明</th><th>状态</th></tr></thead><tbody><tr><td>遭遇类型</td><td>普通战 / 精英战 / boss</td><td>🔴</td></tr><tr><td>敌人组成</td><td>数量 + 类型 + 站位</td><td>🔴</td></tr><tr><td>地形 / 位置</td><td>是否影响行动条(速度差)?</td><td>🔴</td></tr><tr><td>预期回合数</td><td>这场战斗应该打多久</td><td>🔴</td></tr><tr><td>预期伤害交换比</td><td>玩家应该挨多少、打多少</td><td>🔴</td></tr><tr><td>首次遭遇 / 重复遭遇</td><td>掉落是否递减</td><td>🔴</td></tr><tr><td>失败惩罚</td><td>死了回哪、掉什么</td><td>🔴</td></tr><tr><td>逃跑是否允许</td><td>boss 禁逃(已定)</td><td>🟡</td></tr></tbody></table>
+<table><thead><tr><th>项</th><th>说明</th><th>状态</th></tr></thead><tbody><tr><td>遭遇类型</td><td>普通战 / 精英战 / boss</td><td>🔴</td></tr><tr><td>敌人组成</td><td>数量 + 类型 + 站位</td><td>🔴</td></tr><tr><td>地形 / 位置</td><td>是否影响行动条(行动速度差)?</td><td>🔴</td></tr><tr><td>预期回合数</td><td>这场战斗应该打多久</td><td>🔴</td></tr><tr><td>预期伤害交换比</td><td>玩家应该挨多少、打多少</td><td>🔴</td></tr><tr><td>首次遭遇 / 重复遭遇</td><td>掉落是否递减</td><td>🔴</td></tr><tr><td>失败惩罚</td><td>死了回哪、掉什么</td><td>🔴</td></tr><tr><td>逃跑是否允许</td><td>boss 禁逃(已定)</td><td>🟡</td></tr></tbody></table>
 <p><strong>章节级挑战设计</strong>(还没想但必须想):</p>
 <table><thead><tr><th>章节</th><th>玩家在这里要学会什么</th><th>对应的机制</th></tr></thead><tbody><tr><td>1</td><td>基础战斗循环 + 第一次改装</td><td>行动条 / 普通攻击 / 教学改装</td></tr><tr><td>2</td><td>潜行 ≠ 战斗,两条线互相独立</td><td>潜行改件 / 关卡独有改装</td></tr><tr><td>3</td><td>构筑要够强才能过 boss rush</td><td>27 构筑的最终检验</td></tr></tbody></table>
 <hr>
@@ -48,13 +48,13 @@
 <h2 id="5.-难度节奏">5. 难度节奏</h2>
 <blockquote>⚠️ <strong>本节空白</strong>。这是本层最重要也最容易做的一节 —— 但<strong>必须等战斗手感定了再排</strong>,否则排出来的曲线是假的。</blockquote>
 <p><strong>已有的节奏锚点</strong>(来自战斗规则):</p>
-<table><thead><tr><th>锚点</th><th>值</th><th>出处</th></tr></thead><tbody><tr><td>速度 100 → 一次行动</td><td>约 5 秒</td><td>02 §1.5</td></tr><tr><td>速度 50 → 一次行动</td><td>约 10 秒</td><td>02 §1.5</td></tr><tr><td>一场战斗 20 回合</td><td>约 100 秒</td><td>02 §1.5 ⚠️ 待验证</td></tr><tr><td>强击模式</td><td>固定 5 回合</td><td>已定 4</td></tr></tbody></table>
+<table><thead><tr><th>锚点</th><th>值</th><th>出处</th></tr></thead><tbody><tr><td>行动速度 100 → 一次行动</td><td>约 5 秒</td><td>02 §1.5</td></tr><tr><td>行动速度 50 → 一次行动</td><td>约 10 秒</td><td>02 §1.5</td></tr><tr><td>一场战斗 20 回合</td><td>约 100 秒</td><td>02 §1.5 ⚠️ 待验证</td></tr><tr><td>强击模式</td><td>固定 5 回合</td><td>已定 4</td></tr></tbody></table>
 <p><strong>建议的难度曲线骨架</strong>(待数值调试校准):</p>
 <pre class="code"><code data-lang="">章节1  ▁▂▂▃     教学 → 小混混 → 第一次改装
 章节2  ▃▃▄▅     潜行(换维度,不换数值)+ 杂兵 → 机械安保 boss
 章节3  ▅▆▇█     boss rush 三连,难度靠敌人压迫矩阵递进</code></pre>
 <p><strong>难度该靠什么提升</strong>(待定,这是关卡设计最核心的取舍):</p>
-<table><thead><tr><th>手段</th><th>效果</th><th>代价</th></tr></thead><tbody><tr><td>敌人属性(5 属性)拉高</td><td>直接</td><td>无脑,且会跟玩家的属性点系统打架</td></tr><tr><td>敌人韧性上限拉高</td><td>破防窗口变窄</td><td>直接压缩双刀 / 强击构筑</td></tr><tr><td>敌人速度拉高</td><td>抢行动条</td><td>压迫感强,体验最直观</td></tr><tr><td>敌人数量增加</td><td>AOE 压力</td><td>单人主角 vs 多敌,行动条会乱</td></tr><tr><td><strong>压迫矩阵轮换</strong>(高防 / 高闪避 / 高回复)</td><td><strong>逼玩家换构筑</strong></td><td>需要设计,工作量大,但这是唯一能体现 27 构筑价值的方式</td></tr></tbody></table>
+<table><thead><tr><th>手段</th><th>效果</th><th>代价</th></tr></thead><tbody><tr><td>敌人属性(5 属性)拉高</td><td>直接</td><td>无脑,且会跟玩家的属性点系统打架</td></tr><tr><td>敌人韧性上限拉高</td><td>破防窗口变窄</td><td>直接压缩双刀 / 强击构筑</td></tr><tr><td>敌人行动速度拉高</td><td>抢行动条</td><td>压迫感强,体验最直观</td></tr><tr><td>敌人数量增加</td><td>AOE 压力</td><td>单人主角 vs 多敌,行动条会乱</td></tr><tr><td><strong>压迫矩阵轮换</strong>(高防 / 高闪避 / 高回复)</td><td><strong>逼玩家换构筑</strong></td><td>需要设计,工作量大,但这是唯一能体现 27 构筑价值的方式</td></tr></tbody></table>
 <blockquote><strong>倾向</strong>:难度主要走「压迫矩阵轮换」而不是单纯拉数值。理由是 27 构筑是这套游戏的资产,如果所有敌人都只是血厚防高,那 27 构筑的意义就只剩数值差异。<br>压迫矩阵的定义见 <code>03-内容设计.md</code> §4.3。</blockquote>
 <hr>
 <h2 id="6.-关卡布局与遭遇点">6. 关卡布局与遭遇点</h2>

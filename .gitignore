@@ -18,6 +18,8 @@ __pycache__/
 .gradle/
 build/
 dist/
+# 例外:Maid RPG 文档站产物是发布物(纯静态站),需随仓库版本化
+!projects/maid-rpg/site/dist/
 
 # 引擎 / 编辑器临时
 .vs/

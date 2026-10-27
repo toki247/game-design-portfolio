@@ -37,32 +37,32 @@
 <h3 id="1.2-设计目标">1.2 设计目标</h3>
 <ol><li>同一套构筑在不同对手面前有<strong>不同的最优解</strong>(否则 27 构筑白做)</li><li>每次行动都有<strong>可计算的决策</strong>(算伤害、算破防窗口、算开强击的时机),而不是纯随机</li><li>结算过程<strong>对玩家透明</strong> —— 玩家能从数字里读出因果(为什么这刀只打 60%、为什么对手突然破防)</li><li>所有战斗数值<strong>外部可配</strong>,调平衡不改代码</li></ol>
 <h3 id="1.3-系统框架">1.3 系统框架</h3>
-<table><thead><tr><th>子系统</th><th>职责</th><th>位置</th></tr></thead><tbody><tr><td>行动条系统</td><td>决定谁在什么时候行动</td><td>§1.5</td></tr><tr><td>属性计算</td><td>5 属性 → 派生值</td><td>§1.9 公式设计</td></tr><tr><td>受击结算管线</td><td>一次受击的六步顺序</td><td>§1.8</td></tr><tr><td>韧性系统</td><td>破防窗口(双方都有)</td><td>§1.8</td></tr><tr><td>护盾系统</td><td>临时 HP,独立于 buff</td><td>§1.8</td></tr><tr><td>buff / debuff 系统</td><td>数值增减 + 层数 + 持续回合,DOT 作为其子类</td><td>§1.8</td></tr><tr><td>三核心运行时</td><td>火力 / 暗杀 / 强击 三套资源循环</td><td>§1.8</td></tr><tr><td>战斗外围</td><td>行动条 / 胜负 / 逃跑 / 结算 / 敌人数据结构</td><td>§1.5</td></tr></tbody></table>
+<table><thead><tr><th>子系统</th><th>职责</th><th>位置</th></tr></thead><tbody><tr><td>行动条系统</td><td>决定谁在什么时候行动</td><td>§1.5</td></tr><tr><td>属性计算</td><td>5 属性 + 行动速度 → 派生值</td><td>§1.9 公式设计</td></tr><tr><td>受击结算管线</td><td>一次受击的六步顺序</td><td>§1.8</td></tr><tr><td>韧性系统</td><td>破防窗口(双方都有)</td><td>§1.8</td></tr><tr><td>护盾系统</td><td>临时 HP,独立于 buff</td><td>§1.8</td></tr><tr><td>buff / debuff 系统</td><td>数值增减 + 层数 + 持续回合,DOT 作为其子类</td><td>§1.8</td></tr><tr><td>三核心运行时</td><td>火力 / 暗杀 / 强击 三套资源循环</td><td>§1.8</td></tr><tr><td>战斗外围</td><td>行动条 / 胜负 / 逃跑 / 结算 / 敌人数据结构</td><td>§1.5</td></tr></tbody></table>
 <h3 id="1.4-系统入口与出口">1.4 系统入口与出口</h3>
 <table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody><tr><td><strong>入口</strong></td><td>探索系统触发遭遇战 → 传入:玩家构筑快照(核心 / 手部 / 腿部)+ 敌人配置 + 随机种子</td></tr><tr><td><strong>战斗内退出</strong></td><td>玩家在行动条轮到时选择「逃跑」→ 按 <code>速度 / (速度 + K_escape)</code> 判定</td></tr><tr><td><strong>胜利出口</strong></td><td>全部敌方被击败 → 战果结算(经验 / 掉落)→ 回探索系统</td></tr><tr><td><strong>失败出口</strong></td><td>自身 HP 归零 → Game Over → 重试 / 回存档点</td></tr><tr><td><strong>BOSS 战</strong></td><td>禁逃,只能打到胜负分出</td></tr><tr><td><strong>边界</strong></td><td>胜负判定时机(每 0.2s 循环检查 vs 每次行动后检查)未定 —— 见 §1.13</td></tr></tbody></table>
 <h3 id="1.5-系统流程">1.5 系统流程</h3>
 <blockquote>目标:<strong>把一场战斗从头到尾跑通</strong>。战斗内核(第 7-9 步)已完整,这一层负责把它驱动起来。</blockquote>
 <h4 id="10.1-行动条推进规则">10.1 行动条推进规则</h4>
-<table><thead><tr><th>项</th><th>规则</th></tr></thead><tbody><tr><td><strong>行动条满值</strong></td><td><strong>1000</strong></td></tr><tr><td><strong>跑条速度</strong></td><td><strong>速度 × 2</strong>(单位/秒)</td></tr><tr><td><strong>计算频率</strong></td><td><strong>每 0.2 秒</strong>计算一次</td></tr><tr><td><strong>并列处理</strong></td><td>同时满条时,<strong>玩家先动</strong></td></tr><tr><td><strong>溢出处理</strong></td><td><strong>行动后清零</strong>(不保留溢出)</td></tr></tbody></table>
+<table><thead><tr><th>项</th><th>规则</th></tr></thead><tbody><tr><td><strong>行动条满值</strong></td><td><strong>1000</strong></td></tr><tr><td><strong>跑条速度</strong></td><td><strong>行动速度 × 2</strong>(单位/秒)—— 行动速度是独立数值,与 5 属性里的【速度】无关(已定 15)</td></tr><tr><td><strong>计算频率</strong></td><td><strong>每 0.2 秒</strong>计算一次</td></tr><tr><td><strong>并列处理</strong></td><td>同时满条时,<strong>玩家先动</strong></td></tr><tr><td><strong>溢出处理</strong></td><td><strong>行动后清零</strong>(不保留溢出)</td></tr></tbody></table>
 <p><strong>推进逻辑</strong>:</p>
 <pre class="code"><code data-lang="">每 0.2s:
-  所有单位 action_gauge += (速度 × 2) × 0.2
+  所有单位 action_gauge += (行动速度 × 2) × 0.2
   找出所有 action_gauge &gt;= 1000 的单位
   若有多个 → 玩家单位优先
   → 该单位行动
   → action_gauge = 0(清零,不保留溢出)</code></pre>
-<p><strong>跑条速度换算</strong>:行动条速度 = <code>速度 × 2</code>,单位是<strong>条/秒</strong>。</p>
-<p>例:速度 100 → 每秒涨 <code>100 × 2 = 200</code> 条 → <strong>约 5 秒</strong>跑满 1000 条。
-例:速度 50 → 每秒涨 100 条 → 约 10 秒跑满。</p>
-<p><strong>每 0.2s 涨多少</strong>:<code>速度 × 2 × 0.2 = 速度 × 0.4</code>
-例:速度 100 → 每 0.2s 涨 <code>100 × 0.4 = 40</code> 条 → 跑满 1000 需要 <code>1000 / 40 = 25</code> 次 = <strong>5 秒</strong> ✅ 与上面一致。</p>
-<blockquote>⚠️ <strong>实现层待确认</strong>:<br>- <strong>DOT(裂伤/流血)在哪个时机结算</strong> —— 回合制里通常是行动条单位行动前/行动后结算<br>- <strong>玩家方多个单位并列时</strong> —— 单人主角是否无需处理?<br>- <strong>速度被减速到 0</strong> 是否可能 —— 跑条速度要不要设下限 1,避免永远不动?<br>- <strong>战斗节奏预期</strong> —— 速度 100 约 5 秒一次行动,一场战斗若 20 回合就是 100 秒。这个量级玩家能接受吗?(可作为数值调试基准)</blockquote>
+<p><strong>跑条速度换算</strong>:行动条速度 = <code>行动速度 × 2</code>,单位是<strong>条/秒</strong>。</p>
+<p>例:行动速度 100 → 每秒涨 <code>100 × 2 = 200</code> 条 → <strong>约 5 秒</strong>跑满 1000 条。
+例:行动速度 50 → 每秒涨 100 条 → 约 10 秒跑满。</p>
+<p><strong>每 0.2s 涨多少</strong>:<code>行动速度 × 2 × 0.2 = 行动速度 × 0.4</code>
+例:行动速度 100 → 每 0.2s 涨 <code>100 × 0.4 = 40</code> 条 → 跑满 1000 需要 <code>1000 / 40 = 25</code> 次 = <strong>5 秒</strong> ✅ 与上面一致。</p>
+<blockquote>⚠️ <strong>实现层待确认</strong>:<br>- <strong>DOT(裂伤/流血)在哪个时机结算</strong> —— 回合制里通常是行动条单位行动前/行动后结算<br>- <strong>玩家方多个单位并列时</strong> —— 单人主角是否无需处理?<br>- <strong>行动速度被减速到 0</strong> 是否可能 —— 跑条速度要不要设下限 1,避免永远不动?(05 §4 #8)<br>- <strong>战斗节奏预期</strong> —— 行动速度 100 约 5 秒一次行动,一场战斗若 20 回合就是 100 秒。这个量级玩家能接受吗?(可作为数值调试基准)</blockquote>
 <h4 id="10.2-战斗胜负条件">10.2 战斗胜负条件</h4>
 <table><thead><tr><th>条件</th><th>结果</th></tr></thead><tbody><tr><td><strong>击败全部敌方</strong></td><td><strong>胜利</strong></td></tr><tr><td><strong>自己生命值归 0</strong></td><td><strong>失败</strong></td></tr></tbody></table>
 <ul><li>单人主角 vs 多敌人 → 无友方 AI 需求</li><li>胜负判定时机:每 0.2s 循环里检查,还是每次行动结算后检查?</li></ul>
 <h4 id="10.3-逃跑机制">10.3 逃跑机制</h4>
 <table><thead><tr><th>项</th><th>规则</th></tr></thead><tbody><tr><td><strong>消耗</strong></td><td>无</td></tr><tr><td><strong>BOSS 战</strong></td><td><strong>无法逃跑</strong></td></tr><tr><td><strong>成功率</strong></td><td><strong>速度 / (速度 + K)</strong></td></tr></tbody></table>
-<ul><li>K 为配置常量(与减伤公式的 K 是<strong>两个不同的 K</strong>,建议命名区分)</li><li>逃跑是<strong>行动条轮到玩家时可主动选择的指令</strong>,还是独立按钮?</li></ul>
+<ul><li>这里用的是 <strong>5 属性里的【速度】</strong>(战斗速度,敏捷向),<strong>不是</strong>行动速度 —— 逃跑是一次战斗判定,不涉及行动条行进(已定 15)</li><li>K 为配置常量(与减伤公式的 K 是<strong>两个不同的 K</strong>,建议命名区分)</li><li>逃跑是<strong>行动条轮到玩家时可主动选择的指令</strong>,还是独立按钮?</li></ul>
 <p>⚠️ <strong>实现层待确认</strong>:</p>
 <ul><li>逃跑失败的话,玩家这一行动是否就消耗掉了?</li><li>逃跑的 K 值和减伤的 K 值是否应该用同一个配置分组?</li></ul>
 <h4 id="10.3.1-战果结算">10.3.1 战果结算</h4>
@@ -75,6 +75,7 @@
   hp: number
   // 5 属性(体格 / 力量 / 速度 / 技巧 / 幸运)
   stats: { physique, strength, speed, agility, luck }
+  action_speed: number  // 行动速度 —— 专供行动条(已定 15),与 stats.speed 无关
   skills: [Skill]      // 技能表
   // 以下待补
   // exp_reward, drop_table, ai_behavior, is_boss ...
@@ -208,8 +209,10 @@
 <ul><li>优先吸收伤害,溢出才扣 HP</li><li><strong>不叠加</strong>:已有护盾时不刷新、不追加</li><li><strong>不影响韧性累积和减伤计算</strong></li><li>上限 = 当前最大生命值</li></ul>
 <h4 id="character">Character</h4>
 <pre class="code"><code data-lang="">{
-  // 5 属性 + 公式算出
-  hp, attack, defense, action_speed, evasion, crit_rate, accuracy
+  // 输入:5 属性 + 行动速度
+  physique, strength, speed, agility, luck, action_speed
+  // 派生(公式算出)
+  hp, attack, defense, action_gauge_speed, evasion, crit_rate, accuracy
   
   core: Core(FIRE / ASSASSIN / STRONG)
   hand: Module
@@ -227,7 +230,10 @@
 <h4 id="enemy">Enemy</h4>
 <pre class="code"><code data-lang="">{
   name, level
-  hp, attack, defense, action_speed, evasion
+  // 输入:5 属性 + 行动速度(专供行动条,已定 15)
+  physique, strength, speed, agility, luck, action_speed
+  // 派生
+  hp, attack, defense, action_gauge_speed, evasion
   skills: [Skill]               // 每个 Skill 含 impact_multiplier
   current_max_hp, current_hp
   shield: Shield               // 可为 null
@@ -313,9 +319,11 @@ Core (STRONG) {
 <blockquote>⚠️ 修正:早期写的「状态效果暂不做」表述过宽 —— 实际设计已经用了 DOT(裂伤 / 流血),这些<strong>要实现</strong>,只是作为 BuffDebuff 的一种(带周期触发的 debuff),不需要单独的 DOT 系统。真正暂不做的是<strong>硬控 + 异常抗性</strong>。</blockquote>
 <hr>
 <h3 id="1.9-公式设计">1.9 公式设计</h3>
-<p><strong>5 属性</strong>:体格 / 力量 / 速度 / 技巧 / 幸运</p>
+<p><strong>5 属性</strong>:体格 / 力量 / 速度 / 技巧 / 幸运
+<strong>独立数值</strong>:行动速度(专供行动条,已定 15)</p>
 <p><strong>基础公式</strong>:</p>
-<table><thead><tr><th>数值</th><th>公式</th></tr></thead><tbody><tr><td>HP</td><td>体格 × 2</td></tr><tr><td>攻击力</td><td>力量 + 武器攻击 + buff</td></tr><tr><td>防御</td><td>体格</td></tr><tr><td>行动条速度</td><td>速度 × 2</td></tr><tr><td>闪避率</td><td>(幸运 + 速度) / 2(向上取整)</td></tr><tr><td>暴击率</td><td>技巧 + 幸运 / 2</td></tr><tr><td>暴击伤害</td><td>× 1.5</td></tr><tr><td>命中率</td><td>技巧 - 对方闪避</td></tr><tr><td>冲击力</td><td>招式伤害 × 招式冲击力倍率(见 Skill.impact_multiplier)</td></tr><tr><td>屏障最大值</td><td>防御 × 5</td></tr></tbody></table>
+<table><thead><tr><th>数值</th><th>公式</th></tr></thead><tbody><tr><td>HP</td><td>体格 × 2</td></tr><tr><td>攻击力</td><td>力量 + 武器攻击 + buff</td></tr><tr><td>防御</td><td>体格</td></tr><tr><td>行动条速度</td><td>行动速度 × 2</td></tr><tr><td>闪避率</td><td>(幸运 + 速度) / 2(向上取整)</td></tr><tr><td>暴击率</td><td>技巧 + 幸运 / 2</td></tr><tr><td>暴击伤害</td><td>× 1.5</td></tr><tr><td>命中率</td><td>技巧 - 对方闪避</td></tr><tr><td>冲击力</td><td>招式伤害 × 招式冲击力倍率(见 Skill.impact_multiplier)</td></tr><tr><td>屏障最大值</td><td>防御 × 5</td></tr></tbody></table>
+<blockquote>⚠️ <strong>两个「速度」不是一个东西</strong>(已定 15):<br>- <strong>【速度】</strong> = 5 属性之一,只影响 <strong>闪避率</strong>(与幸运一起)和 <strong>逃跑成功率</strong>,量级 10~30<br>- <strong>【行动速度】</strong> = 独立数值,只影响 <strong>行动条行进</strong>,量级 50~150(100 ≈ 5 秒一次行动)<br>- 两边互不影响:战斗速度拉满不会让你先动手,行动速度拉满也不会提高闪避</blockquote>
 <p><strong>受击结算公式</strong>:</p>
 <table><thead><tr><th>结算项</th><th>公式</th></tr></thead><tbody><tr><td><strong>减伤率</strong></td><td><strong>防御 / (防御 + K)</strong>,K 为配置常量(待定)</td></tr><tr><td>招架率</td><td>闪避率 + 减伤率(已定 7)</td></tr><tr><td>最终承伤</td><td>原始伤害 × (1 - 减伤率) × (破防 ? 1.5 : 1.0)</td></tr><tr><td>护盾吸收</td><td>min(最终承伤, 护盾 current),溢出部分扣 HP</td></tr><tr><td>韧性累积</td><td>招式冲击力 × 招式冲击力倍率 × 韧性系数</td></tr></tbody></table>
 <p><strong>结算顺序</strong>(已确认):</p>
@@ -355,7 +363,7 @@ Core (STRONG) {
 <p><strong>硬性边界(不可协商)</strong>:</p>
 <ul><li>强击模式<strong>最多 5 回合</strong>,不可延长,不因模块不同而变化</li><li><strong>终结技是强击模式的唯一出口</strong> —— 不存在「未放终结技就退普通模式」</li><li>行动条<strong>溢出清零</strong>,不保留溢出</li><li>数值必须<strong>全部走配置</strong>,逻辑代码不写死数字</li><li>强击期间产生的临时状态<strong>统一在终结技结算完毕后回滚</strong></li></ul>
 <p><strong>实现层待确认</strong>(见 §1.5 与 §1.8 的 ⚠️ 标记):</p>
-<ul><li>DOT(裂伤 / 流血)在哪个时机结算 —— 行动前 or 行动后</li><li>玩家方多个单位并列时的处理(单人主角是否无需处理)</li><li>速度被减速到 0 时,跑条速度要不要设下限 1</li><li>逃跑失败是否消耗这次行动</li><li>减伤 K 值与逃跑 K 值是否同一配置分组</li><li>胜负判定时机:每 0.2s 循环里检查,还是每次行动结算后检查</li></ul>
+<ul><li>DOT(裂伤 / 流血)在哪个时机结算 —— 行动前 or 行动后</li><li>玩家方多个单位并列时的处理(单人主角是否无需处理)</li><li>行动速度被减速到 0 时,跑条速度要不要设下限 1</li><li>逃跑失败是否消耗这次行动</li><li>减伤 K 值与逃跑 K 值是否同一配置分组</li><li>胜负判定时机:每 0.2s 循环里检查,还是每次行动结算后检查</li></ul>
 <p><strong>设计层待补</strong>:</p>
 <ul><li>敌人能力与 AI(见 03 内容设计 §4)</li><li>战斗节奏目标(一场战斗预期多少回合,直接决定数值基准,见 05)</li></ul>
 <hr>
@@ -457,9 +465,19 @@ Core (STRONG) {
 <ul><li><strong>受击结算顺序已确认</strong>:闪避/招架判定 → 扣防御穿透算有效防御 → 减伤率 → 承伤 → 破防判定 ×1.5 → 护盾吸收 → 累积韧性。</li><li>副作用提醒:常数除法递减收益意味着<strong>低防段减同样防御值收益更大</strong>,高防角色被穿透时减伤跌幅更明显(符合直觉)。</li><li>武士刀终结技的 <code>+2% 防御穿透</code>/层 是<strong>攻击方穿透</strong>,不作用于自己,与自己招架率不冲突。</li></ul>
 <h3 id="已定-14-—-强击光学装置改攻击向2026-10-21,第-9-步构筑验证后修订">已定 14 — 强击光学装置改攻击向(2026-10-21,第 9 步构筑验证后修订)</h3>
 <ul><li><strong>强击模式下的光学装置增幅从「挨打给护盾」改为「【光学蓄能】叠攻击」</strong>:<ul><li>受到伤害时获得 1 层,<strong>最多 10 层</strong>,每层提升攻击力 <strong>2%</strong></li><li>满 10 层 = 攻击力 +20%</li></ul></li><li><strong>普通模式保留护盾不变</strong>(火力 / 暗杀核心下手部不吃防御,护盾增幅无冲突)</li><li><strong>原因</strong>(见 9.4 验证):#23 双刀+光学(双重血量惩罚)、#26 武士刀+光学(护盾削弱挨打次数,与手部核心对立)。根因是强击三手部全部自带防御向机制,腿部再给防御就撞车。</li><li><strong>【光学蓄能】为持有型叠层,战斗结束清零</strong>(同不动装置)。</li><li>路线选择:走<strong>路线 A(改腿部)</strong>而非路线 B(改手部)—— 影响面小,只动强击 × 光学的 3 个组合,且保留强击核心「挨打换伤害」主线上「挨打」的挂钩点。</li></ul>
+<h3 id="已定-15-—-新增独立数值【行动速度】,与-5-属性里的【速度】剥离2026-10-26">已定 15 — 新增独立数值【行动速度】,与 5 属性里的【速度】剥离(2026-10-26)</h3>
+<ul><li><strong>背景</strong>:实现核心层时发现「速度 100 ≈ 5 秒一次行动」(05 §5 行动条基准)与「闪避率 = (幸运 + 速度)/2」(§1.9)撞在同一个数值上 —— 速度 100 会让闪避率变成 55%、招架率 88.3%,<strong>打不中人</strong>。</li><li><strong>决定</strong>:新增独立数值 <strong>【行动速度】</strong>(<code>action_speed</code>),<strong>只用于行动条行进</strong>;5 属性里的【速度】回归战斗用途(闪避率 / 逃跑成功率)。</li></ul>
+<p>  ``<code>
+  行动条速度 = 行动速度 × action_gauge_speed_mult(2.0)
+  闪避率     = (幸运 + 速度) / 2(向上取整)   ← 速度只进这里
+  逃跑成功率 = 速度 / (速度 + K_escape)      ← 也用战斗速度
+  </code>``</p>
+<ul><li><strong>量纲分离</strong>:</li></ul>
+<table><thead><tr><th>数值</th><th>量级</th><th>作用</th></tr></thead><tbody><tr><td>【速度】</td><td>10~30</td><td>闪避率 / 逃跑成功率</td></tr><tr><td>【行动速度】</td><td>50~150</td><td>行动条行进(100 ≈ 5 秒一次行动)</td></tr></tbody></table>
+<ul><li><strong>不受影响</strong>:HP / 攻击力 / 防御 / 暴击率 / 减伤率 / 招架率 的公式全部不动。</li><li><strong>连带影响</strong>:喷射装置的「每 3 回合 +2 速度」原本是「加速出手」的意思,改为 <strong>+2 行动速度</strong>;暗杀武士刀技能 1 的「加速(行动条速度 +50%)」改为 <strong>行动速度 +50%</strong>。</li><li><strong>实现口径</strong>:代码里派生值叫 <code>action_gauge_speed</code>(行动条速度),输入数值叫 <code>action_speed</code>(行动速度),两者不混用。</li></ul>
   <footer>Maid RPG 设计文档 · 赛博朋克 / 机械女仆 / 搞笑无厘头 · Godot · 独立开发<br>
   本页由 <code>site/build.py</code> 从仓库内的 Markdown 生成,内容以仓库为准。</footer>
 </main>
 </div>
-<div class="toc"><b>本页目录</b><a class="l1" href="#02-·-系统设计文档">02 · 系统设计文档</a><a class="l2" href="#0.-系统总览">0. 系统总览</a><a class="l3" href="#0.1-系统清单">0.1 系统清单</a><a class="l3" href="#0.2-系统入口与出口">0.2 系统入口与出口</a><a class="l3" href="#0.3-系统间关系">0.3 系统间关系</a><a class="l2" href="#1.-战斗系统s-1">1. 战斗系统(S-1)</a><a class="l3" href="#1.1-系统定位">1.1 系统定位</a><a class="l3" href="#1.2-设计目标">1.2 设计目标</a><a class="l3" href="#1.3-系统框架">1.3 系统框架</a><a class="l3" href="#1.4-系统入口与出口">1.4 系统入口与出口</a><a class="l3" href="#1.5-系统流程">1.5 系统流程</a><a class="l3" href="#1.6-核心对象">1.6 核心对象</a><a class="l3" href="#1.7-核心功能-——-机制清单">1.7 核心功能 —— 机制清单</a><a class="l3" href="#1.8-核心规则">1.8 核心规则</a><a class="l3" href="#1.9-公式设计">1.9 公式设计</a><a class="l3" href="#1.10-ui-交互设计">1.10 UI 交互设计</a><a class="l3" href="#1.11-配置需求">1.11 配置需求</a><a class="l3" href="#1.12-资源需求">1.12 资源需求</a><a class="l3" href="#1.13-边界条件与已知缺口">1.13 边界条件与已知缺口</a><a class="l2" href="#2.-构筑系统s-2">2. 构筑系统(S-2)</a><a class="l2" href="#3.-养成系统s-3">3. 养成系统(S-3)</a><a class="l2" href="#4.-改装系统s-4">4. 改装系统(S-4)</a><a class="l2" href="#5.-探索系统s-5">5. 探索系统(S-5)</a><a class="l2" href="#6.-对话系统s-6">6. 对话系统(S-6)</a><a class="l2" href="#7.-线索系统s-7">7. 线索系统(S-7)</a><a class="l2" href="#8.-决议记录已定-1-14">8. 决议记录(已定 1-14)</a><a class="l3" href="#已定-1-—-手部特性归属火力核心">已定 1 — 手部特性归属火力核心</a><a class="l3" href="#已定-2-—-强击核心改为「主动切换-+-血量代价」2026-10-21-改版">已定 2 — 强击核心改为「主动切换 + 血量代价」(2026-10-21 改版)</a><a class="l3" href="#已定-3-—-强击手部只有技能,无独立特性">已定 3 — 强击手部只有技能,无独立特性</a><a class="l3" href="#已定-4-—-强击模式硬性-5-回合上限2026-10-21">已定 4 — 强击模式硬性 5 回合上限(2026-10-21)</a><a class="l3" href="#已定-5-—-到期强制释放终结技-+-状态回滚2026-10-21,含武士刀血量规则修订">已定 5 — 到期强制释放终结技 + 状态回滚(2026-10-21,含武士刀血量规则修订)</a><a class="l3" href="#已定-6-—-【崩解】为一次性标记,不叠层2026-10-21">已定 6 — 【崩解】为一次性标记,不叠层(2026-10-21)</a><a class="l3" href="#已定-7-—-招架率-=-闪避率-+-防御减伤率2026-10-21">已定 7 — 招架率 = 闪避率 + 防御减伤率(2026-10-21)</a><a class="l3" href="#待定-—-strong-新数据结构">待定 — STRONG 新数据结构</a><a class="l3" href="#已定-8-—-强击腿部增幅为「双档」结构2026-10-21">已定 8 — 强击腿部增幅为「双档」结构(2026-10-21)</a><a class="l3" href="#已定-9-—-强击腿部三条实现规则2026-10-21">已定 9 — 强击腿部三条实现规则(2026-10-21)</a><a class="l3" href="#已定-11-—-减伤公式采用常数除法2026-10-21">已定 11 — 减伤公式采用常数除法(2026-10-21)</a><a class="l3" href="#已定-12-—-韧性-/-护盾-/-buff-debuff-三套底层规则2026-10-21">已定 12 — 韧性 / 护盾 / buff-debuff 三套底层规则(2026-10-21)</a><a class="l3" href="#已定-13-—-防御穿透-=-减法扣防御值-+-受击结算顺序确认2026-10-21">已定 13 — 防御穿透 = 减法扣防御值 + 受击结算顺序确认(2026-10-21)</a><a class="l3" href="#已定-14-—-强击光学装置改攻击向2026-10-21,第-9-步构筑验证后修订">已定 14 — 强击光学装置改攻击向(2026-10-21,第 9 步构筑验证后修订)</a></div>
+<div class="toc"><b>本页目录</b><a class="l1" href="#02-·-系统设计文档">02 · 系统设计文档</a><a class="l2" href="#0.-系统总览">0. 系统总览</a><a class="l3" href="#0.1-系统清单">0.1 系统清单</a><a class="l3" href="#0.2-系统入口与出口">0.2 系统入口与出口</a><a class="l3" href="#0.3-系统间关系">0.3 系统间关系</a><a class="l2" href="#1.-战斗系统s-1">1. 战斗系统(S-1)</a><a class="l3" href="#1.1-系统定位">1.1 系统定位</a><a class="l3" href="#1.2-设计目标">1.2 设计目标</a><a class="l3" href="#1.3-系统框架">1.3 系统框架</a><a class="l3" href="#1.4-系统入口与出口">1.4 系统入口与出口</a><a class="l3" href="#1.5-系统流程">1.5 系统流程</a><a class="l3" href="#1.6-核心对象">1.6 核心对象</a><a class="l3" href="#1.7-核心功能-——-机制清单">1.7 核心功能 —— 机制清单</a><a class="l3" href="#1.8-核心规则">1.8 核心规则</a><a class="l3" href="#1.9-公式设计">1.9 公式设计</a><a class="l3" href="#1.10-ui-交互设计">1.10 UI 交互设计</a><a class="l3" href="#1.11-配置需求">1.11 配置需求</a><a class="l3" href="#1.12-资源需求">1.12 资源需求</a><a class="l3" href="#1.13-边界条件与已知缺口">1.13 边界条件与已知缺口</a><a class="l2" href="#2.-构筑系统s-2">2. 构筑系统(S-2)</a><a class="l2" href="#3.-养成系统s-3">3. 养成系统(S-3)</a><a class="l2" href="#4.-改装系统s-4">4. 改装系统(S-4)</a><a class="l2" href="#5.-探索系统s-5">5. 探索系统(S-5)</a><a class="l2" href="#6.-对话系统s-6">6. 对话系统(S-6)</a><a class="l2" href="#7.-线索系统s-7">7. 线索系统(S-7)</a><a class="l2" href="#8.-决议记录已定-1-14">8. 决议记录(已定 1-14)</a><a class="l3" href="#已定-1-—-手部特性归属火力核心">已定 1 — 手部特性归属火力核心</a><a class="l3" href="#已定-2-—-强击核心改为「主动切换-+-血量代价」2026-10-21-改版">已定 2 — 强击核心改为「主动切换 + 血量代价」(2026-10-21 改版)</a><a class="l3" href="#已定-3-—-强击手部只有技能,无独立特性">已定 3 — 强击手部只有技能,无独立特性</a><a class="l3" href="#已定-4-—-强击模式硬性-5-回合上限2026-10-21">已定 4 — 强击模式硬性 5 回合上限(2026-10-21)</a><a class="l3" href="#已定-5-—-到期强制释放终结技-+-状态回滚2026-10-21,含武士刀血量规则修订">已定 5 — 到期强制释放终结技 + 状态回滚(2026-10-21,含武士刀血量规则修订)</a><a class="l3" href="#已定-6-—-【崩解】为一次性标记,不叠层2026-10-21">已定 6 — 【崩解】为一次性标记,不叠层(2026-10-21)</a><a class="l3" href="#已定-7-—-招架率-=-闪避率-+-防御减伤率2026-10-21">已定 7 — 招架率 = 闪避率 + 防御减伤率(2026-10-21)</a><a class="l3" href="#待定-—-strong-新数据结构">待定 — STRONG 新数据结构</a><a class="l3" href="#已定-8-—-强击腿部增幅为「双档」结构2026-10-21">已定 8 — 强击腿部增幅为「双档」结构(2026-10-21)</a><a class="l3" href="#已定-9-—-强击腿部三条实现规则2026-10-21">已定 9 — 强击腿部三条实现规则(2026-10-21)</a><a class="l3" href="#已定-11-—-减伤公式采用常数除法2026-10-21">已定 11 — 减伤公式采用常数除法(2026-10-21)</a><a class="l3" href="#已定-12-—-韧性-/-护盾-/-buff-debuff-三套底层规则2026-10-21">已定 12 — 韧性 / 护盾 / buff-debuff 三套底层规则(2026-10-21)</a><a class="l3" href="#已定-13-—-防御穿透-=-减法扣防御值-+-受击结算顺序确认2026-10-21">已定 13 — 防御穿透 = 减法扣防御值 + 受击结算顺序确认(2026-10-21)</a><a class="l3" href="#已定-14-—-强击光学装置改攻击向2026-10-21,第-9-步构筑验证后修订">已定 14 — 强击光学装置改攻击向(2026-10-21,第 9 步构筑验证后修订)</a><a class="l3" href="#已定-15-—-新增独立数值【行动速度】,与-5-属性里的【速度】剥离2026-10-26">已定 15 — 新增独立数值【行动速度】,与 5 属性里的【速度】剥离(2026-10-26)</a></div>
 </body></html>
