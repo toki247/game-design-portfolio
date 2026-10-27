@@ -390,3 +390,18 @@ scripts/battle/ ui/ world/ autoload/
 - 纯逻辑层不 extends Node,才能脱离场景跑几千次循环做数值调试
 
 **轨道**:跟 MH 运营(D:\OPS-MH)、系统策划作品集主线都分开,严格按目录区分
+### Maid RPG 文档站 (2026-10-27)
+Type: config
+
+- **站点生成器**:`projects/maid-rpg/site/build.py`,**零依赖**(自带 md→html 解析器:标题/段落/表格/围栏代码块/引用/嵌套列表/分割线/行内代码·粗体·斜体·链接)。刻意不装 `markdown` 包 —— 不改用户环境,仓库随时可重建
+- **产物**:`projects/maid-rpg/site/dist/` —— 7 页:`index.html`(渲染 `idea.md` + hero + 五层结构卡片)/ `01-GDD.html` / `02-系统设计.html` / `03-内容设计.html` / `04-关卡设计.html` / `05-数值与配置.html` / `系统规格书.html` + `assets/style.css`(深色主题,左侧固定导航 + 右侧 h2/h3 目录)
+- **重建流程**:改源 .md → `python site/build.py` → `.md` 与 `dist/` 一起 commit
+- **`.gitignore` 例外**:`!projects/maid-rpg/site/dist/` —— dist 是发布物,入库(全局 `dist/` 规则仍忽略别处)
+- **本地预览**:直接 `file://` 打开 `dist/index.html`,无需起服务器
+- **发布形态未定**(待用户拍板):A 静态站公开 URL(`website_deploy`)/ B Notion 公开页 / C `portfolio-overview` mini app(AGENTS.md 里规划过,但 `portfolio-overview.json` 还不存在)
+
+**踩过的坑(跨项目通用)**:
+- 自写 Markdown 解析器时,**代码块 / 表格里的行内标记**最容易被后面的规则吃掉 —— 解法:先用占位符把代码块和链接整段抽走,再跑行内解析
+- 嵌套列表必须用**栈**记 `[indent, tag, li_open]`,不能靠缩进数硬算,否则 `<li>`/`<ul>` 不配平
+- **`git push` 被拒要先看远端**:远端可能有本地没有的新提交(尤其是 memory 同步),而且远端改了源文档 → **站点产物要按远端最新文档重建**,否则线上 HTML 是旧内容
+- PowerShell `Set-Content -Encoding UTF8` 会加 BOM 且可能改行尾,**跨进程同步 memory 文件要用 Python `shutil.copy2` 做字节级复制**,否则仓库里会出现无意义的整文件 diff
