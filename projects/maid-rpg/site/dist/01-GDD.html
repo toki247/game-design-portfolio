@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>游戏总体设计 · Maid RPG 设计文档</title>
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<div class="wrap">
+<aside>
+  <div class="brand"><b>Maid RPG</b><span>设计文档 · 五层结构</span></div>
+  <nav><a class="" href="index.html"><i></i>总览</a><a class="on" href="01-GDD.html"><i></i>① GDD</a><a class="" href="02-系统设计.html"><i></i>② 系统设计</a><a class="" href="03-内容设计.html"><i></i>③ 内容设计</a><a class="" href="04-关卡设计.html"><i></i>④ 关卡设计</a><a class="" href="05-数值与配置.html"><i></i>⑤ 数值与配置</a><a class="" href="系统规格书.html"><i></i>执行层</a></nav>
+</aside>
+<main>
+  <div class="pagehead">
+    <div class="kicker">① GDD</div>
+    <h1>游戏总体设计</h1>
+    <p>定位 · 核心体验 · 核心玩法 · 核心循环 · 3C</p>
+  </div>
+  <blockquote><strong>职责</strong>:明确游戏定位、核心体验、核心玩法、核心循环及整体设计方向。<br><strong>这一层最重要的一条</strong>:核心体验。几乎所有后续设计(系统 / 内容 / 关卡 / 数值)都是为了实现它而存在。<br><strong>上游</strong>:无(这是根)<br><strong>下游</strong>:<code>02-系统设计.md</code>、<code>03-内容设计.md</code>、<code>04-关卡设计.md</code>、<code>05-数值与配置.md</code><br><strong>状态</strong>:定位 / 体验 / 玩法 / 3C 已定;<strong>核心循环为推导稿,待确认</strong></blockquote>
+<hr>
+<h2 id="1.-游戏定位">1. 游戏定位</h2>
+<table><thead><tr><th>维度</th><th>选择</th></tr></thead><tbody><tr><td>类型</td><td>回合制 RPG(单人战斗 + 探索)</td></tr><tr><td>题材</td><td>赛博朋克 / 机械女仆 / 搞笑无厘头</td></tr><tr><td>引擎</td><td>Godot</td></tr><tr><td>平台</td><td>PC</td></tr><tr><td>队伍</td><td>个人(独立开发)</td></tr><tr><td>结构</td><td>3 章节 × 1 地图</td></tr><tr><td>章节</td><td>黑街外围 → 黑帮大楼 → 大楼地下室</td></tr></tbody></table>
+<hr>
+<h2 id="2.-核心体验">2. 核心体验</h2>
+<h3 id="2.1-玩家体验">2.1 玩家体验</h3>
+<ul><li><strong>机械三无女仆</strong>(冷酷 + 萌点)</li><li><strong>养成</strong>(升级属性点)</li><li><strong>故事驱动</strong></li></ul>
+<h3 id="2.2-流程长度">2.2 流程长度</h3>
+<ul><li><strong>全流程 1-2 小时</strong></li></ul>
+<h3 id="2.3-叙事张力">2.3 叙事张力</h3>
+<ul><li>小姐是黑街地下话事人,伪装被抓走逃离原生家庭</li><li>女仆追查 → 真相揭示 → 终极对抗</li><li><strong>基调:搞笑无厘头</strong>(参考 兰斯、夏娃年代记)</li></ul>
+<hr>
+<h2 id="3.-核心玩法">3. 核心玩法</h2>
+<ul><li><strong>回合制战斗 + 3 槽装备构筑</strong></li><li>女仆可以改装手部、腿部、核心三个模块的武装</li><li>改装后形成 <strong>27 种不同战斗构筑</strong>(3 核心 × 3 手部 × 3 腿部)</li></ul>
+<hr>
+<h2 id="4.-核心循环">4. 核心循环</h2>
+<blockquote>⚠️ <strong>本节为推导稿</strong>(2026-10-26 从第 4 / 5 / 6 / 10 步的设计反推),不是最初就定下来的。<strong>需确认后定稿</strong> —— 核心循环一旦定错,后面四层全部要返工。</blockquote>
+<h3 id="4.1-战斗内循环秒级">4.1 战斗内循环(秒级)</h3>
+<pre class="code"><code data-lang="">行动条推进(每 0.2s tick)
+  → 满条单位行动(并列时玩家优先)
+  → 结算(受击六步管线:闪避/招架 → 扣穿透算有效防御 → 减伤率 → 破防 ×1.5 → 护盾吸收 → 累积韧性)
+  → buff/debuff 状态变化(DOT 周期触发)
+  → 回到行动条</code></pre>
+<h3 id="4.2-战斗间循环分钟级">4.2 战斗间循环(分钟级)</h3>
+<pre class="code"><code data-lang="">接敌
+  → 选构筑(核心 × 手部 × 腿部 = 27 种)
+  → 战斗内循环
+  → 胜负判定(胜 / 败 / 逃)
+  → 战果结算(经验 / 掉落)
+  → 升级 +3 属性点(自由分配)
+  → 改装(换构筑 / 换改装件)
+  → 回到接敌</code></pre>
+<h3 id="4.3-章节循环小时级">4.3 章节循环(小时级)</h3>
+<pre class="code"><code data-lang="">探索(调查 / 潜行 / boss rush)
+  → 收集线索
+  → 解锁改装件(店主教 / 潜行改件 / 防御程序)
+  → 推进章节
+  → 改变结局走向(全线索 / 部分线索 / 无线索)</code></pre>
+<h3 id="4.4-三层循环的分工">4.4 三层循环的分工</h3>
+<table><thead><tr><th>层级</th><th>玩家在做什么</th><th>对应的设计层</th></tr></thead><tbody><tr><td>秒级</td><td>选指令、算伤害、赌时机</td><td>系统设计(战斗)</td></tr><tr><td>分钟级</td><td>配构筑、分配属性点</td><td>系统设计(构筑 / 养成)+ 内容设计(模块)</td></tr><tr><td>小时级</td><td>探图、收集线索、选结局</td><td>关卡设计 + 内容设计(剧情)</td></tr></tbody></table>
+<blockquote><strong>设计意图</strong>:三层循环的爽点不同 —— 秒级靠操作与计算,分钟级靠构筑搭配,小时级靠信息收集与叙事反转。三层互相不能抢戏,这是「内容设计」要平衡的东西。</blockquote>
+<hr>
+<h2 id="5.-3c">5. 3C</h2>
+<table><thead><tr><th>维度</th><th>选择</th></tr></thead><tbody><tr><td>角色</td><td>机械女仆(主角)</td></tr><tr><td>相机</td><td><strong>俯视角</strong>(参考 宝可梦 + 八方旅人)</td></tr><tr><td>操控</td><td>移动:八方旅人式 / 战斗:回合制菜单(参考 兰斯)</td></tr></tbody></table>
+<hr>
+<h2 id="6.-整体设计方向">6. 整体设计方向</h2>
+<ul><li><strong>基调</strong>:搞笑无厘头(参考 兰斯、夏娃年代记)</li><li><strong>叙事结构</strong>:小姐是黑街地下话事人,伪装被抓走逃离原生家庭 → 女仆追查 → 真相揭示 → 终极对抗</li><li><strong>反常识点</strong>:读者以为在打黑帮老大,实际老大是假象,最终 boss 是小姐本人</li><li><strong>核心循环</strong>:见 §4(待确认)</li></ul>
+<hr>
+<h2 id="7.-本层缺口">7. 本层缺口</h2>
+<table><thead><tr><th>缺口</th><th>为什么重要</th><th>状态</th></tr></thead><tbody><tr><td><strong>核心循环未确认</strong></td><td>全文最上游的锚点,错了四层全返工</td><td>🟡 推导稿待确认</td></tr><tr><td>战斗节奏目标(一场战斗预期多少回合 / 多少秒)</td><td>决定数值调试基准,也是「好玩吗」的第一道闸</td><td>🟡 未定(见 05 §5)</td></tr><tr><td>玩家画像(目标玩家是谁、给什么爽点)</td><td>内容设计需要它来平衡「不同玩家画像的需求」</td><td>🔴 未定</td></tr><tr><td>失败惩罚与重试节奏</td><td>1-2 小时流程里死了重来几次是体验底线</td><td>🔴 未定</td></tr><tr><td>参考作品清单(除 3C 外)</td><td>美术 / 音 / 战斗手感都需要对标物</td><td>🟡 部分</td></tr></tbody></table>
+<blockquote><strong>下一步建议</strong>:先把 §4 核心循环确认掉,再去补 <code>02-系统设计.md</code> 里缺的那 6 套系统。</blockquote>
+  <footer>Maid RPG 设计文档 · 赛博朋克 / 机械女仆 / 搞笑无厘头 · Godot · 独立开发<br>
+  本页由 <code>site/build.py</code> 从仓库内的 Markdown 生成,内容以仓库为准。</footer>
+</main>
+</div>
+<div class="toc"><b>本页目录</b><a class="l1" href="#01-·-gdd游戏总体设计文档">01 · GDD(游戏总体设计文档)</a><a class="l2" href="#1.-游戏定位">1. 游戏定位</a><a class="l2" href="#2.-核心体验">2. 核心体验</a><a class="l3" href="#2.1-玩家体验">2.1 玩家体验</a><a class="l3" href="#2.2-流程长度">2.2 流程长度</a><a class="l3" href="#2.3-叙事张力">2.3 叙事张力</a><a class="l2" href="#3.-核心玩法">3. 核心玩法</a><a class="l2" href="#4.-核心循环">4. 核心循环</a><a class="l3" href="#4.1-战斗内循环秒级">4.1 战斗内循环(秒级)</a><a class="l3" href="#4.2-战斗间循环分钟级">4.2 战斗间循环(分钟级)</a><a class="l3" href="#4.3-章节循环小时级">4.3 章节循环(小时级)</a><a class="l3" href="#4.4-三层循环的分工">4.4 三层循环的分工</a><a class="l2" href="#5.-3c">5. 3C</a><a class="l2" href="#6.-整体设计方向">6. 整体设计方向</a><a class="l2" href="#7.-本层缺口">7. 本层缺口</a></div>
+</body></html>

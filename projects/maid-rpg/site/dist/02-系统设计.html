@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>7 套系统 · 13 项策划案 · Maid RPG 设计文档</title>
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<div class="wrap">
+<aside>
+  <div class="brand"><b>Maid RPG</b><span>设计文档 · 五层结构</span></div>
+  <nav><a class="" href="index.html"><i></i>总览</a><a class="" href="01-GDD.html"><i></i>① GDD</a><a class="on" href="02-系统设计.html"><i></i>② 系统设计</a><a class="" href="03-内容设计.html"><i></i>③ 内容设计</a><a class="" href="04-关卡设计.html"><i></i>④ 关卡设计</a><a class="" href="05-数值与配置.html"><i></i>⑤ 数值与配置</a><a class="" href="系统规格书.html"><i></i>执行层</a></nav>
+</aside>
+<main>
+  <div class="pagehead">
+    <div class="kicker">② 系统设计</div>
+    <h1>7 套系统 · 13 项策划案</h1>
+    <p>战斗 / 构筑 / 养成 / 改装 / 探索 / 对话 / 线索</p>
+  </div>
+  <blockquote><strong>职责</strong>:制定游戏各系统的功能、运行规则、交互流程及边界条件,确保系统逻辑清晰且能落地实现。<br><strong>上游</strong>:<code>01-GDD.md</code> —— 每个系统都必须能说清「它服务于哪个核心体验」<br><strong>下游</strong>:<code>03-内容设计.md</code>(规则的具体化)、<code>05-数值与配置.md</code>(规则的数值化)<br><strong>拆法</strong>:每套系统一份完整策划案,固定 13 项:<br>系统定位 / 设计目标 / 系统框架 / 系统流程 / 系统入口与出口 / 核心对象 / 核心功能 / 核心规则 / 公式设计 / UI 交互设计 / 配置需求 / 资源需求 / 边界条件<br><strong>状态</strong>:S-1 战斗系统 ✅ 完整;S-2 构筑系统 🔶 框架已定;S-3 ~ S-7 🔴 仅骨架</blockquote>
+<hr>
+<h2 id="0.-系统总览">0. 系统总览</h2>
+<h3 id="0.1-系统清单">0.1 系统清单</h3>
+<table><thead><tr><th>#</th><th>系统</th><th>职责</th><th>状态</th><th>详见</th></tr></thead><tbody><tr><td>S-1</td><td><strong>战斗系统</strong></td><td>行动条推进 / 受击结算 / 韧性护盾 buff / 强击模式</td><td>✅ 设计完成,待实现</td><td>§1</td></tr><tr><td>S-2</td><td><strong>构筑系统</strong></td><td>核心 × 手部 × 腿部 = 27 构筑;特性归属与增幅结构</td><td>🔶 框架已定,具体内容在 03</td><td>§2</td></tr><tr><td>S-3</td><td><strong>养成系统</strong></td><td>经验 / 等级 / 属性点 / 成长曲线</td><td>🔴 仅有「每级 +3 属性点」</td><td>§3</td></tr><tr><td>S-4</td><td><strong>改装系统</strong></td><td>模块解锁 / 改装流程 / 关卡独有改装件</td><td>🔶 只知有「改装件」概念</td><td>§4</td></tr><tr><td>S-5</td><td><strong>探索系统</strong></td><td>俯视角地图探索 / 调查点 / 遭遇战</td><td>🔴 空白</td><td>§5</td></tr><tr><td>S-6</td><td><strong>对话系统</strong></td><td>对白显示 / 选项 / 分支</td><td>🔴 空白</td><td>§6</td></tr><tr><td>S-7</td><td><strong>线索系统</strong></td><td>线索收集 → 防御程序 → 多结局判定</td><td>🔴 空白,多结局硬依赖</td><td>§7</td></tr></tbody></table>
+<h3 id="0.2-系统入口与出口">0.2 系统入口与出口</h3>
+<table><thead><tr><th>入口系统</th><th>出口系统</th><th>触发条件</th></tr></thead><tbody><tr><td>S-5 探索</td><td>S-1 战斗</td><td>遭遇战触发点 / boss 战</td></tr><tr><td>S-1 战斗</td><td>S-5 探索</td><td>胜利 → 战果结算 → 回地图;失败 → Game Over;逃跑 → 回地图</td></tr><tr><td>S-1 战斗</td><td>S-3 养成</td><td>胜利 → 经验结算 → 升级 → 属性点</td></tr><tr><td>S-3 养成</td><td>S-4 改装</td><td>解锁改装件 / 改装</td></tr><tr><td>S-4 改装</td><td>S-5 探索</td><td>构筑生效,回到地图</td></tr><tr><td>S-6 对话</td><td>S-7 线索</td><td>对话中触发线索收集</td></tr><tr><td>S-7 线索</td><td>S-5 探索</td><td>线索齐全 → 防御程序 → 结局分支</td></tr></tbody></table>
+<h3 id="0.3-系统间关系">0.3 系统间关系</h3>
+<pre class="code"><code data-lang="">        ┌──────────── S-5 探索 ────────────┐
+        │  ↓ 遭遇            ↑ 回地图       │
+        │  S-1 战斗 ─→ S-3 养成 ─→ S-4 改装 ┘
+        │  ↑ 结局判定
+        └── S-7 线索 ← S-6 对话</code></pre>
+<ul><li><strong>战斗系统是唯一的枢纽</strong> —— 7 套系统里 4 套直接跟它相邻,所以它的规则最容易污染其他系统(比如强击模式的状态回滚就会跟养成层的「最大生命值」打架)。</li><li><strong>线索系统是多结局的唯一开关</strong>,且必须在 S-6 对话设计之前定 —— 对话分支要预留「收集线索」这个动作。</li></ul>
+<hr>
+<h2 id="1.-战斗系统s-1">1. 战斗系统(S-1)</h2>
+<h3 id="1.1-系统定位">1.1 系统定位</h3>
+<p>把「构筑选择」变成「可计算的对局」的翻译层。玩家在战斗外选好 27 构筑之一,战斗内这套构筑被翻译成具体的行为节奏(攒能量 / 赌暴击 / 挨打换伤害)。</p>
+<h3 id="1.2-设计目标">1.2 设计目标</h3>
+<ol><li>同一套构筑在不同对手面前有<strong>不同的最优解</strong>(否则 27 构筑白做)</li><li>每次行动都有<strong>可计算的决策</strong>(算伤害、算破防窗口、算开强击的时机),而不是纯随机</li><li>结算过程<strong>对玩家透明</strong> —— 玩家能从数字里读出因果(为什么这刀只打 60%、为什么对手突然破防)</li><li>所有战斗数值<strong>外部可配</strong>,调平衡不改代码</li></ol>
+<h3 id="1.3-系统框架">1.3 系统框架</h3>
+<table><thead><tr><th>子系统</th><th>职责</th><th>位置</th></tr></thead><tbody><tr><td>行动条系统</td><td>决定谁在什么时候行动</td><td>§1.5</td></tr><tr><td>属性计算</td><td>5 属性 → 派生值</td><td>§1.9 公式设计</td></tr><tr><td>受击结算管线</td><td>一次受击的六步顺序</td><td>§1.8</td></tr><tr><td>韧性系统</td><td>破防窗口(双方都有)</td><td>§1.8</td></tr><tr><td>护盾系统</td><td>临时 HP,独立于 buff</td><td>§1.8</td></tr><tr><td>buff / debuff 系统</td><td>数值增减 + 层数 + 持续回合,DOT 作为其子类</td><td>§1.8</td></tr><tr><td>三核心运行时</td><td>火力 / 暗杀 / 强击 三套资源循环</td><td>§1.8</td></tr><tr><td>战斗外围</td><td>行动条 / 胜负 / 逃跑 / 结算 / 敌人数据结构</td><td>§1.5</td></tr></tbody></table>
+<h3 id="1.4-系统入口与出口">1.4 系统入口与出口</h3>
+<table><thead><tr><th>项</th><th>内容</th></tr></thead><tbody><tr><td><strong>入口</strong></td><td>探索系统触发遭遇战 → 传入:玩家构筑快照(核心 / 手部 / 腿部)+ 敌人配置 + 随机种子</td></tr><tr><td><strong>战斗内退出</strong></td><td>玩家在行动条轮到时选择「逃跑」→ 按 <code>速度 / (速度 + K_escape)</code> 判定</td></tr><tr><td><strong>胜利出口</strong></td><td>全部敌方被击败 → 战果结算(经验 / 掉落)→ 回探索系统</td></tr><tr><td><strong>失败出口</strong></td><td>自身 HP 归零 → Game Over → 重试 / 回存档点</td></tr><tr><td><strong>BOSS 战</strong></td><td>禁逃,只能打到胜负分出</td></tr><tr><td><strong>边界</strong></td><td>胜负判定时机(每 0.2s 循环检查 vs 每次行动后检查)未定 —— 见 §1.13</td></tr></tbody></table>
+<h3 id="1.5-系统流程">1.5 系统流程</h3>
+<blockquote>目标:<strong>把一场战斗从头到尾跑通</strong>。战斗内核(第 7-9 步)已完整,这一层负责把它驱动起来。</blockquote>
+<h4 id="10.1-行动条推进规则">10.1 行动条推进规则</h4>
+<table><thead><tr><th>项</th><th>规则</th></tr></thead><tbody><tr><td><strong>行动条满值</strong></td><td><strong>1000</strong></td></tr><tr><td><strong>跑条速度</strong></td><td><strong>速度 × 2</strong>(单位/秒)</td></tr><tr><td><strong>计算频率</strong></td><td><strong>每 0.2 秒</strong>计算一次</td></tr><tr><td><strong>并列处理</strong></td><td>同时满条时,<strong>玩家先动</strong></td></tr><tr><td><strong>溢出处理</strong></td><td><strong>行动后清零</strong>(不保留溢出)</td></tr></tbody></table>
+<p><strong>推进逻辑</strong>:</p>
+<pre class="code"><code data-lang="">每 0.2s:
+  所有单位 action_gauge += (速度 × 2) × 0.2
+  找出所有 action_gauge &gt;= 1000 的单位
+  若有多个 → 玩家单位优先
+  → 该单位行动
+  → action_gauge = 0(清零,不保留溢出)</code></pre>
+<p><strong>跑条速度换算</strong>:行动条速度 = <code>速度 × 2</code>,单位是<strong>条/秒</strong>。</p>
+<p>例:速度 100 → 每秒涨 <code>100 × 2 = 200</code> 条 → <strong>约 5 秒</strong>跑满 1000 条。
+例:速度 50 → 每秒涨 100 条 → 约 10 秒跑满。</p>
+<p><strong>每 0.2s 涨多少</strong>:<code>速度 × 2 × 0.2 = 速度 × 0.4</code>
+例:速度 100 → 每 0.2s 涨 <code>100 × 0.4 = 40</code> 条 → 跑满 1000 需要 <code>1000 / 40 = 25</code> 次 = <strong>5 秒</strong> ✅ 与上面一致。</p>
+<blockquote>⚠️ <strong>实现层待确认</strong>:<br>- <strong>DOT(裂伤/流血)在哪个时机结算</strong> —— 回合制里通常是行动条单位行动前/行动后结算<br>- <strong>玩家方多个单位并列时</strong> —— 单人主角是否无需处理?<br>- <strong>速度被减速到 0</strong> 是否可能 —— 跑条速度要不要设下限 1,避免永远不动?<br>- <strong>战斗节奏预期</strong> —— 速度 100 约 5 秒一次行动,一场战斗若 20 回合就是 100 秒。这个量级玩家能接受吗?(可作为数值调试基准)</blockquote>
+<h4 id="10.2-战斗胜负条件">10.2 战斗胜负条件</h4>
+<table><thead><tr><th>条件</th><th>结果</th></tr></thead><tbody><tr><td><strong>击败全部敌方</strong></td><td><strong>胜利</strong></td></tr><tr><td><strong>自己生命值归 0</strong></td><td><strong>失败</strong></td></tr></tbody></table>
+<ul><li>单人主角 vs 多敌人 → 无友方 AI 需求</li><li>胜负判定时机:每 0.2s 循环里检查,还是每次行动结算后检查?</li></ul>
+<h4 id="10.3-逃跑机制">10.3 逃跑机制</h4>
+<table><thead><tr><th>项</th><th>规则</th></tr></thead><tbody><tr><td><strong>消耗</strong></td><td>无</td></tr><tr><td><strong>BOSS 战</strong></td><td><strong>无法逃跑</strong></td></tr><tr><td><strong>成功率</strong></td><td><strong>速度 / (速度 + K)</strong></td></tr></tbody></table>
+<ul><li>K 为配置常量(与减伤公式的 K 是<strong>两个不同的 K</strong>,建议命名区分)</li><li>逃跑是<strong>行动条轮到玩家时可主动选择的指令</strong>,还是独立按钮?</li></ul>
+<p>⚠️ <strong>实现层待确认</strong>:</p>
+<ul><li>逃跑失败的话,玩家这一行动是否就消耗掉了?</li><li>逃跑的 K 值和减伤的 K 值是否应该用同一个配置分组?</li></ul>
+<h4 id="10.3.1-战果结算">10.3.1 战果结算</h4>
+<table><thead><tr><th>项</th><th>规则</th></tr></thead><tbody><tr><td><strong>经验</strong></td><td>根据敌方等级获得对应经验值 —— <strong>具体数值后续拉表</strong></td></tr><tr><td><strong>掉落</strong></td><td>敌人掉落 —— <strong>后续设计</strong></td></tr></tbody></table>
+<ul><li>经验曲线 / 等级上限 / 属性点总数:<strong>后续系统补</strong></li><li>战果是否包含:金币、模块解锁、线索 —— 待定</li></ul>
+<h4 id="10.4-敌人数据结构">10.4 敌人数据结构</h4>
+<pre class="code"><code data-lang="">Enemy {
+  name: string
+  level: int
+  hp: number
+  // 5 属性(体格 / 力量 / 速度 / 技巧 / 幸运)
+  stats: { physique, strength, speed, agility, luck }
+  skills: [Skill]      // 技能表
+  // 以下待补
+  // exp_reward, drop_table, ai_behavior, is_boss ...
+}</code></pre>
+<p><strong>当前已有</strong>:名字 / 等级 / HP / 属性 / 技能表</p>
+<p><strong>待补</strong>:</p>
+<ul><li>敌人能力设计(<strong>后续再做</strong>)—— 小混混 / 杂兵 / 机械安保 / 老大各用什么招</li><li>敌人 AI 决策逻辑(块 2 列了,正文零展开)</li><li>经验掉落表 / 掉落表</li><li>韧性上限(已定说「每单位不同」,需分配)</li><li>是否 BOSS 的标记(决定能否逃跑)</li></ul>
+<h4 id="10.5-战斗流程骨架暂定">10.5 战斗流程骨架(暂定)</h4>
+<pre class="code"><code data-lang="">战斗开始
+  → 初始化(行动条归零 / buff 清空 / 韧性回满)
+  → 主循环(每 0.2s)
+      → 所有单位跑条
+      → 判定胜负
+      → 满条单位行动(玩家优先)
+          → 选指令(攻击 / 技能 / 逃跑)
+          → 结算(按 4.5 六步顺序)
+          → DOT 结算(待定时机)
+  → 战斗结束(胜/负/逃)
+  → 战果结算(经验 / 掉落)</code></pre>
+<blockquote>⚠️ 这个骨架只是流程示意,<strong>实现层需要拆成几个脚本</strong> —— 具体拆分等开 Godot 工程时定。</blockquote>
+<hr>
+<h3 id="1.6-核心对象">1.6 核心对象</h3>
+<blockquote>数据结构定义。每个对象对应 Godot 里的一个 Resource 类(只有 <code>@export</code> 字段,不放数值)。</blockquote>
+<h4 id="设计原则">设计原则</h4>
+<ol><li><strong>手部特性归属火力核心</strong> — 枪炮 OVERHEAT / 双刀 ARMOR_PIERCE / 武士刀 CHARGE 只在<strong>火力核心</strong>下生效,作为火力核心的被动机制成组出现。<strong>暗杀 / 强击核心不额外设计手部特性</strong>,手部模块在这些核心下只有技能。</li><li><strong>腿部:特性固定 + 增幅按核心</strong> — 3 个腿部模块各带 1 条固定被动(所有核心共用),核心增幅因核心而异。</li><li><strong>核心增幅 = 因核心不同</strong></li><li>手部:<strong>技能</strong>因核心而异(每个核心的技能设计不同)</li><li>核心增幅可以是<strong>主动技能</strong>(有 CD)</li><li>强击模式可<strong>主动退出</strong>(释放技能 1/2 是退出动作)</li></ol>
+<h4 id="module">Module</h4>
+<pre class="code"><code data-lang="">Module {
+  part_type: HAND | LEG
+  
+  name, visual, description
+  
+  // 手部:技能因核心而异
+  skills_by_core: {
+    fire: [Skill, ...],
+    assassin: [Skill, ...],
+    strong: [Skill, ...]
+  }
+  
+  // 手部特性:只在火力核心下生效(暗杀 / 强击为空)
+  hand_feature_by_core: {
+    fire: ModuleFeature?,        // OVERHEAT / ARMOR_PIERCE / CHARGE
+    assassin: null,
+    strong: null
+  }
+  
+  // 腿部固定被动:所有核心共用
+  leg_feature: PassiveFeature?
+  
+  // 核心增幅:每个核心独立
+  core_amp_by_core: {
+    fire: CoreAmp?,
+    assassin: CoreAmp?,
+    strong: CoreAmp?
+  }
+}</code></pre>
+<blockquote>腿部被动优先级:<strong>固定特性</strong>(恒生效)⊕ <strong>核心增幅</strong>(按核心,可主动/被动)<br>手部在暗杀 / 强击核心下<strong>无特性</strong>,只有技能。</blockquote>
+<h4 id="modulefeature手部特性-—-仅火力核心">ModuleFeature(手部特性 — 仅火力核心)</h4>
+<p>只在<strong>火力核心</strong>下生效;暗杀 / 强击核心下手部模块无特性。</p>
+<table><thead><tr><th>类型</th><th>对应模块</th><th>关键字段</th></tr></thead><tbody><tr><td>OVERHEAT</td><td>枪炮</td><td>thresholds, decay_per_turn, overload_state</td></tr><tr><td>ARMOR_PIERCE</td><td>双刀</td><td>base_pierce, burst_pierce, burst_status</td></tr><tr><td>CHARGE</td><td>武士刀</td><td>charge_skill_id, release_skill_id, charge_buff</td></tr></tbody></table>
+<h4 id="passivefeature腿部被动">PassiveFeature(腿部被动)</h4>
+<pre class="code"><code data-lang="">{
+  trigger: 每 N 回合 | 进入战斗时 | 持续 | ...
+  effect: {
+    target: SELF | ENEMY | ALLY,
+    stat: SPEED | DEFENSE | ACCURACY | EVASION | ...,
+    mode: ADD | MULTIPLY | OVERRIDE,
+    value: number,
+    duration: 永久 | N 回合 | 触发型
+  }
+}</code></pre>
+<h4 id="coreamp核心增幅,可主动或被动">CoreAmp(核心增幅,可主动或被动)</h4>
+<pre class="code"><code data-lang="">{
+  type: PASSIVE | ACTIVE
+  trigger: &quot;每消耗 X 能量&quot; | &quot;主动释放&quot; | &quot;受到伤害&quot; | &quot;常驻&quot;
+  cooldown: int  // 仅 ACTIVE 有(光学装置护盾用)
+  // ⚠️ 强击核心的腿部增幅是「双档」(已定 8):normal 一套,strong_mode 一套
+  tiers: {
+    normal: { ... }       // 普通模式参数
+    strong_mode: { ... }  // 强击模式内参数(数值更强)
+  }
+  // 其他核心仍用单一参数
+  effect: { ... }
+}</code></pre>
+<h4 id="skill">Skill</h4>
+<pre class="code"><code data-lang="">{
+  type: NORMAL | BURST
+  name, energy_cost,
+  damage_multipliers[],     // 基础倍率(如 180% / 300%)
+  impact_multiplier,        // 基础冲击力倍率(决定受击方累积多少韧性)
+  aoe_targets, energy_gain_per_use,
+  effects: [StatusEffect]
+}</code></pre>
+<blockquote><code>impact_multiplier</code> 是韧性系统的输入项(见 4.2)—— 招式设计时必须同时考虑伤害倍率和冲击力倍率。</blockquote>
+<h4 id="buffdebuff增益-/-减益-——-通用结构">BuffDebuff(增益 / 减益 —— 通用结构)</h4>
+<pre class="code"><code data-lang="">{
+  type: OVERHEAT | MIND_EYE | SHEATH | BURST_STATE | STRONG_MODE | WOUND | HEAVY_WOUND
+      | SWORD_INTENT | HASTE | RECOVERY | SMOKE
+      | PARRY | HARD_EDGE | DECAY(崩解) | OUTSIDE_BODY | SHIELD | BACKWATER(背水) | ...,
+  // 数值增减
+  target: SELF | ENEMY | ALLY
+  stat: ATTACK | IMPACT | CRIT_RATE | PARRY_RATE | DEFENSE | DAMAGE_RECEIVED | ...,
+  mode: ADD | MULTIPLY | OVERRIDE,
+  value: number,
+  // 层数(可选)
+  max_stacks: int,
+  current_stacks: int,
+  // 持续(可选;不填 = 永久,直到战斗结束)
+  duration: int,   // 回合
+  decay_per_turn: number
+}</code></pre>
+<p><strong>设计原则</strong>:</p>
+<ul><li>所有数值型增减走同一个 BuffDebuff 结构,不按用途分叉</li><li>需要层数的加 <code>max_stacks</code> / <code>current_stacks</code>,不需要就留空</li><li>需要时限的加 <code>duration</code>,永久的留空</li></ul>
+<p><strong>已用到的 buff / debuff</strong>:</p>
+<table><thead><tr><th>效果</th><th>类型</th><th>层数</th><th>归属</th></tr></thead><tbody><tr><td><strong>招架率</strong> PARRY</td><td>属性(SELF)</td><td>—</td><td>强击武士刀(闪避率 + 减伤率转换)</td></tr><tr><td><strong>【刚剑】</strong> HARD_EDGE</td><td>增益</td><td>最多 10,每层 +10% 攻/冲 +1% 招架</td><td>强击武士刀</td></tr><tr><td><strong>【崩解】</strong> DECAY</td><td>减益</td><td><strong>1,不叠层</strong>,重复只刷新时长</td><td>强击武士刀</td></tr><tr><td><strong>【身外身】</strong> OUTSIDE_BODY</td><td>免伤额度</td><td>10,每受 1 次未招架攻击 -1 层</td><td>强击武士刀</td></tr><tr><td><strong>护盾</strong> SHIELD</td><td>特殊(独立结构)</td><td>上限 = 当前最大生命值,不叠加</td><td>强击光学装置</td></tr><tr><td><strong>背水</strong> BACKWATER</td><td>增益(比例)</td><td>—</td><td>强击枪炮(按剩余血量)</td></tr></tbody></table>
+<blockquote><strong>【崩解】不叠层</strong>:同目标只存 1 层(8.7 已定 6)。<br><strong>招架率公式</strong>:<code>招架率 = 闪避率 + 防御减伤率</code>,具体公式待 4.5 补(8.7 已定 7)。<br><strong>护盾</strong>走独立的 <code>Shield</code> 结构(见下),不用 BuffDebuff —— 因为它有独立的吸收逻辑。</blockquote>
+<h4 id="tenacity韧性">Tenacity(韧性)</h4>
+<pre class="code"><code data-lang="">{
+  current: float,
+  max: float                 // 每个单位上限不同(主角 / 敌人 / boss 各自配置)
+  broken: bool,               // 是否处于破防状态
+  broken_turns_remaining: int // 破防持续回合(1 回合 → 受伤害 +50%)
+}</code></pre>
+<ul><li>受击时按招式 <code>impact_multiplier</code> 累积 current</li><li>打空 → broken = true,持续 1 回合</li><li>下一回合恢复 max</li></ul>
+<h4 id="shield护盾">Shield(护盾)</h4>
+<pre class="code"><code data-lang="">{
+  current: float,
+  max: float        // = 当前最大生命值(双刀减半上限时会跟着变)
+  cooldown: int     // 光学装置:普通 3 回合 / 强击 2 回合
+  source: ...       // 来源模块
+}</code></pre>
+<ul><li>优先吸收伤害,溢出才扣 HP</li><li><strong>不叠加</strong>:已有护盾时不刷新、不追加</li><li><strong>不影响韧性累积和减伤计算</strong></li><li>上限 = 当前最大生命值</li></ul>
+<h4 id="character">Character</h4>
+<pre class="code"><code data-lang="">{
+  // 5 属性 + 公式算出
+  hp, attack, defense, action_speed, evasion, crit_rate, accuracy
+  
+  core: Core(FIRE / ASSASSIN / STRONG)
+  hand: Module
+  leg: Module
+  
+  // 战斗状态
+  current_hp, current_energy
+  current_max_hp,              // 可被临时修改(双刀减半 / 武士刀 1 点锁定)
+  shield: Shield               // 护盾(可为 null)
+  tenacity: Tenacity           // 韧性
+  buffs: [BuffDebuff]          // 增益 / 减益
+  module_state: { overheat, bleed_stacks, sheath_ready, ... }
+  action_gauge: float
+}</code></pre>
+<h4 id="enemy">Enemy</h4>
+<pre class="code"><code data-lang="">{
+  name, level
+  hp, attack, defense, action_speed, evasion
+  skills: [Skill]               // 每个 Skill 含 impact_multiplier
+  current_max_hp, current_hp
+  shield: Shield               // 可为 null
+  tenacity: Tenacity           // 上限按敌人类型配置(杂兵 / 精英 / boss 不同)
+  buffs: [BuffDebuff]
+}</code></pre>
+<h4 id="core每个核心字段不同,不复用">Core(每个核心字段不同,不复用)</h4>
+<pre class="code"><code data-lang="">Core (FIRE) {
+  type: FIRE
+  energy_capacity: 300
+  current_energy: int
+  // 无额外状态字段(机制通过 Skill 触发)
+}
+
+Core (ASSASSIN) {
+  type: ASSASSIN
+  energy_capacity: 500
+  current_energy: int
+  burst_state: {
+    active: bool,
+    remaining_turns: int,    // 基础 5,可延长
+    modifier: { attack_mult: 1.2, ... }
+  }
+}
+
+Core (STRONG) {
+  type: STRONG
+  // ⚠️ 2026-10-21 改版:不再有 charge_pool / shield,改为「主动切换 + 各模块自定义代价」
+  // 旧结构 charge_pool / shield 已作废,详见 8.7「已定 2」
+  strong_mode: {
+    active: bool
+    enter_cost: ...           // 各模块自定义(枪炮: 无固定代价,靠技能自伤 / 双刀: 上限减半)
+    mods: { ... }             // 各模块自定义(枪炮背水 / 双刀吸放 100%)
+    exit_skill_id: int        // 强击模式终结技
+    damage_accumulated: float // 枪炮终结技按期间伤害回血用
+  }
+  // 临时生命上限(双刀减半用),需要支持 max_hp_modifier
+  max_hp_modifier: { value: float, source: ... }
+}</code></pre>
+<hr>
+<h3 id="1.7-核心功能-——-机制清单">1.7 核心功能 —— 机制清单</h3>
+<h4 id="4.1-核心机制-—-27-构筑">4.1 核心机制 — 27 构筑</h4>
+<p><strong>3 模块 × 3 选项</strong>:</p>
+<table><thead><tr><th>模块</th><th>选项</th><th>作用</th></tr></thead><tbody><tr><td><strong>核心</strong></td><td>火力 / 暗杀 / 强击</td><td>改变战斗循环(能量循环方式)</td></tr><tr><td><strong>手部</strong></td><td>枪炮 / 双刀 / 武士刀</td><td>攻击输出方式(普通 + 爆发技能)</td></tr><tr><td><strong>腿部</strong></td><td>喷射 / 光学 / 不动</td><td>防御方式(被动特性)</td></tr></tbody></table>
+<ul><li>每个手部模块都有&quot;普通 + 爆发&quot;(武士刀 <strong>3 个</strong>技能:普通 + 蓄能 + 拔刀斩)</li><li>每个腿部模块都有&quot;模块特性(固定)+ 核心增幅(随核心)&quot;</li></ul>
+<h4 id="4.2-战斗系统">4.2 战斗系统</h4>
+<ul><li><strong>FF7 行动条式战斗</strong>:满行动条可进行 1 次动作</li><li><strong>韧性机制</strong>(双方都有):见下方完整规则</li><li><strong>护盾系统</strong>:见下方完整规则</li></ul>
+<h5 id="韧性机制2026-10-21-补全">韧性机制(2026-10-21 补全)</h5>
+<p><strong>积累</strong></p>
+<ul><li>受击时,根据<strong>招式的冲击力倍率</strong>累积韧性</li><li>每个招式自带 <code>基础冲击力倍率</code>(见 Skill 数据结构),倍率越高累积越快</li><li>韧性有<strong>上限</strong>,且<strong>每个单位上限不同</strong>(主角 / 各敌人 / boss 各有自己的韧性上限)</li></ul>
+<p><strong>破防</strong></p>
+<ul><li>韧性条打空 → <strong>破防</strong> → 受伤害 <strong>+50%</strong></li><li>破防后<strong>持续 1 回合</strong>:该回合内受到的伤害持续 +50%</li></ul>
+<p><strong>恢复</strong></p>
+<ul><li>破防的<strong>下一回合</strong>恢复<strong>全部韧性条</strong>(回到满值)</li><li>恢复时直接回满,不做部分恢复</li></ul>
+<blockquote>循环节奏:打空 → 1 回合增伤窗口 → 回满 → 再打空。这让韧性成为「双方轮流找窗口」的攻防节奏工具。</blockquote>
+<h5 id="护盾系统2026-10-21-新增">护盾系统(2026-10-21 新增)</h5>
+<ul><li>护盾是<strong>临时生命值</strong>:优先承受伤害,打穿后溢出部分才扣到本体 HP</li><li>护盾<strong>会被击破</strong>(不是永久增益)</li><li>护盾<strong>不影响韧性和减伤效果</strong> —— 护盾吸收伤害,不等于完全免伤,不阻断韧性累积</li><li><strong>护盾上限 = 当前最大生命值</strong>(即最多只能挡满一整条血)</li><li>光学装置是当前唯一提供护盾的模块(见 8.6),护盾<strong>不跨回合叠加</strong>(已定 9)</li></ul>
+<blockquote>护盾 / 韧性 / 减伤是三套独立机制,分别管「血量缓冲 / 破防窗口 / 数值减免」,互不干扰。</blockquote>
+<h4 id="4.3-3-核心-—-资源循环">4.3 3 核心 — 资源循环</h4>
+<table><thead><tr><th>核心</th><th>能量槽</th><th>资源获得</th><th>消耗 → 效果</th></tr></thead><tbody><tr><td><strong>火力</strong></td><td>300</td><td>普通攻击</td><td>消耗释放手/腿爆发(<strong>动作型,一次性</strong>)</td></tr><tr><td><strong>暗杀</strong></td><td>500</td><td>闪避 / 暴击</td><td>满槽开启<strong>爆发状态</strong>(攻击 ×1.2,基础 5 回合,延长:触发 1/3/5/7/9 次闪暴 → +1 回合)</td></tr><tr><td><strong>强击</strong></td><td>无固定槽</td><td><strong>挨打换伤害</strong>(被动减伤 / 回血累积)</td><td>主动切换<strong>强击模式</strong>(各模块自定义血量代价 + 加成),用<strong>终结技</strong>退出</td></tr></tbody></table>
+<hr>
+<h3 id="1.8-核心规则">1.8 核心规则</h3>
+<h4 id="4.4-强击核心详细机制2026-10-21-改版">4.4 强击核心详细机制(2026-10-21 改版)</h4>
+<p><strong>核心定位</strong>:<strong>通过挨打来换伤害</strong> —— 承担更高风险,兑现更高输出。装备强击核心后,战斗中<strong>获得一个主动技能用于切换强击模式</strong>,由玩家自己判断时机。</p>
+<blockquote>⚠️ <strong>本节已作废</strong>:原「护盾抵消伤害 → 充能池 → 满池进强击模式 → 充能耗完退出」循环(旧 charge_pool / shield 机制)全部作废。<br>新版:强击模式改为<strong>主动切换</strong>,不再有全局充能池。风险来源从「被动充能」改为「自伤 / 减上限 / 减防」等<strong>各模块自定义代价</strong>。</blockquote>
+<h5 id="通用结构">通用结构</h5>
+<ul><li><strong>进入方式</strong>:战斗开始时获得 1 个<strong>主动技能</strong>(切换为强击模式),玩家自行决定何时开</li><li><strong>进入代价</strong>:各手部模块自定义(自伤 / 减生命上限 / 减防等)</li><li><strong>强击模式内收益</strong>:各模块自定义(伤害倍率提升 / 吸收效率翻倍 / 按剩余血量提升属性等)</li><li><strong>退出方式</strong>:各模块自定义终结技,打完回到普通模式</li></ul>
+<h5 id="硬性规则-—-强击模式回合上限-5-回合">硬性规则 — 强击模式回合上限 5 回合</h5>
+<p><strong>强击模式最多持续 5 回合,不可延长。</strong></p>
+<ul><li>第 5 回合结束时<strong>强制释放终结技</strong>,打完立即退出</li><li><strong>终结技是强击模式的唯一出口</strong>,不存在&quot;未放终结技就退普通模式&quot;的情况</li><li>终结技效果结算完毕后,统一回滚所有强击期间的临时状态(详见 8.7「已定 5」)</li><li>回合上限<strong>不因模块不同而变化</strong>,3 个手部统一 5 回合</li><li>设计意图:强制玩家在有限窗口内做决策 —— 什么时候开、开到第几回合放终结技;同时保证临时状态不会泄漏到普通模式</li></ul>
+<h5 id="设计意图">设计意图</h5>
+<p>让「挨打」成为<strong>玩家主动选择的风险</strong>,而不是被动充能攒满就开。挨得越多收益越高,但进入强击模式本身就要先付出代价 —— 风险与收益的兑换关系由玩家在战斗中自己权衡。</p>
+<hr>
+<h4 id="4.4.1-强击核心三套实现范式">4.4.1 强击核心三套实现范式</h4>
+<p>三个手部走出三条不同的路:</p>
+<table><thead><tr><th></th><th>枪炮模块</th><th>双刀模块</th><th>武士刀模块</th></tr></thead><tbody><tr><td>血量代价</td><td>技能 1 每次扣 20% 最大生命</td><td>释放刀扣 20% 最大生命 / 进强击减半上限</td><td>进强击<strong>生命值变 1 点</strong> + 10 层身外身免伤</td></tr><tr><td>防御向代价</td><td>强击模式防 <strong>-50%</strong></td><td>进强击 <strong>30% 减伤</strong></td><td><strong>放弃闪避</strong>(闪避率转招架率)</td></tr><tr><td>强击内收益</td><td><strong>背水</strong>:按剩余血量比例提升攻/冲/暴</td><td>吸收效率 100% + 释放额外伤害 100%</td><td><strong>【刚剑】</strong>叠层:每层 +10% 攻/冲 +1% 招架,最多 10 层</td></tr><tr><td>挨打怎么变现</td><td>掉血 → 被动减伤阶梯上升</td><td>挨打 → 吸收回血</td><td>招架 → 叠刚剑;未招架 → 化身外身免伤</td></tr><tr><td>终结技</td><td>全体 200% + 按造成伤害回血</td><td>单体 300% + 回满血</td><td>耗尽刚剑(每层 +15% 攻/冲 +2% 破甲)+ 按身外身层数回血</td></tr><tr><td>退出后血量</td><td>保留终结技回血后的值</td><td>回满血</td><td><strong>身外身剩余层数 × 10%</strong>(最低 1 点,不判死)—— 层数用得越多出来越残</td></tr><tr><td>定位</td><td>越残血越强的<strong>赌命输出</strong></td><td>用血量管理换<strong>续航 + 高爆发</strong></td><td>用招架次数换<strong>成长 + 破甲处决</strong>,但额度烧完就残</td></tr></tbody></table>
+<p><strong>三种范式分别对应</strong>:枪炮 = 高风险高波动(喜欢刀尖跳舞),双刀 = 血线管理(稳扎稳打),武士刀 = 招架叠层(靠操作和技术流吃收益)。</p>
+<blockquote>⚠️ <strong>注意</strong>:<br>- 「防御 -50%」原以为是<strong>强击核心通用加成</strong>,现确认是<strong>枪炮模块专属</strong>(跟双刀的 30% 减伤、武士刀的放弃闪避并列,不是通用规则)。三个模块代价不同向,构筑才有区分度。<br>- 武士刀的「生命值变 1 点」最极端 —— 但靠 10 层【身外身】兜底,实际是「限定 10 次挨打额度」,不是裸送。</blockquote>
+<p><strong>共用硬性规则</strong>:强击模式<strong>最多 5 回合</strong>,到点强制退出(详见 4.4「硬性规则」)。三条范式的终结技都必须在这 5 回合内打出。</p>
+<h4 id="4.6-养成-/-装备-/-状态">4.6 养成 / 装备 / 状态</h4>
+<ul><li>每升一级 <strong>+3 属性点</strong>(自由分配)</li><li>27 模块,<strong>不分稀有度</strong></li><li><strong>buff / debuff 系统要实现</strong>(数值增减 + 层数 + 持续回合)—— 现有设计已大量使用</li><li><strong>异常状态分类</strong>(2026-10-21 澄清):</li></ul>
+<table><thead><tr><th>类别</th><th>状态</th><th>处理</th></tr></thead><tbody><tr><td><strong>数值型</strong> buff/debuff</td><td>过热 / 心眼 / 击伤 / 刚剑 / 背水 / 光学蓄能 ...</td><td>✅ 实现,走 <code>BuffDebuff</code> 通用结构</td></tr><tr><td><strong>持续伤害(DOT)</strong></td><td>裂伤(30% 攻/回合)、流血(2% 最大 HP/回合)</td><td>✅ <strong>已实际使用</strong>,实现为「按回合触发的 debuff」,走同一套 BuffDebuff 结构(<code>duration</code> + 周期触发)</td></tr><tr><td><strong>硬控</strong></td><td>晕眩 / 冻结 / 麻痹</td><td>❌ 暂不做</td></tr><tr><td><strong>异常抗性</strong></td><td>中毒免疫、眩晕抗性等独立属性</td><td>❌ 暂不做</td></tr><tr><td><strong>护盾</strong></td><td>光学装置</td><td>✅ 实现,走独立 <code>Shield</code> 结构</td></tr></tbody></table>
+<blockquote>⚠️ 修正:早期写的「状态效果暂不做」表述过宽 —— 实际设计已经用了 DOT(裂伤 / 流血),这些<strong>要实现</strong>,只是作为 BuffDebuff 的一种(带周期触发的 debuff),不需要单独的 DOT 系统。真正暂不做的是<strong>硬控 + 异常抗性</strong>。</blockquote>
+<hr>
+<h3 id="1.9-公式设计">1.9 公式设计</h3>
+<p><strong>5 属性</strong>:体格 / 力量 / 速度 / 技巧 / 幸运</p>
+<p><strong>基础公式</strong>:</p>
+<table><thead><tr><th>数值</th><th>公式</th></tr></thead><tbody><tr><td>HP</td><td>体格 × 2</td></tr><tr><td>攻击力</td><td>力量 + 武器攻击 + buff</td></tr><tr><td>防御</td><td>体格</td></tr><tr><td>行动条速度</td><td>速度 × 2</td></tr><tr><td>闪避率</td><td>(幸运 + 速度) / 2(向上取整)</td></tr><tr><td>暴击率</td><td>技巧 + 幸运 / 2</td></tr><tr><td>暴击伤害</td><td>× 1.5</td></tr><tr><td>命中率</td><td>技巧 - 对方闪避</td></tr><tr><td>冲击力</td><td>招式伤害 × 招式冲击力倍率(见 Skill.impact_multiplier)</td></tr><tr><td>屏障最大值</td><td>防御 × 5</td></tr></tbody></table>
+<p><strong>受击结算公式</strong>:</p>
+<table><thead><tr><th>结算项</th><th>公式</th></tr></thead><tbody><tr><td><strong>减伤率</strong></td><td><strong>防御 / (防御 + K)</strong>,K 为配置常量(待定)</td></tr><tr><td>招架率</td><td>闪避率 + 减伤率(已定 7)</td></tr><tr><td>最终承伤</td><td>原始伤害 × (1 - 减伤率) × (破防 ? 1.5 : 1.0)</td></tr><tr><td>护盾吸收</td><td>min(最终承伤, 护盾 current),溢出部分扣 HP</td></tr><tr><td>韧性累积</td><td>招式冲击力 × 招式冲击力倍率 × 韧性系数</td></tr></tbody></table>
+<p><strong>结算顺序</strong>(已确认):</p>
+<ol><li>判定闪避 / 招架(武士刀)</li><li><strong>扣除防御穿透</strong> → 计算有效防御</li><li>计算减伤率 → 得出最终承伤</li><li>判定破防(韧性是否打空)→ ×1.5</li><li>护盾优先吸收 → 溢出扣 HP</li><li>累积韧性</li></ol>
+<h5 id="防御穿透的实现方式2026-10-21-定">防御穿透的实现方式(2026-10-21 定)</h5>
+<p><strong>防御穿透 = 攻击时直接扣减目标的有效防御数值,再进减伤率公式。</strong></p>
+<pre class="code"><code data-lang="">有效防御 = max(0, 目标防御 - 穿透值)
+减伤率   = 有效防御 / (有效防御 + K)</code></pre>
+<ul><li>穿透<strong>不是独立乘区</strong>,是<strong>减法扣防御值</strong></li><li>减到 0 为止(不产生负值),<code>max(0, ...)</code> 兜底</li><li>影响链条:穿透 ↑ → 有效防御 ↓ → 减伤率 ↓ → 承伤 ↑</li></ul>
+<blockquote>注意:因为常数除法有递减收益,<strong>低防御段减同样的防御值收益更大</strong> —— 高防角色被穿透时的减伤跌幅会比低防角色明显。这符合直觉(防得高的人,被破防时掉得也狠)。<br>⚠️ <strong>副作用</strong>:减伤率同时是招架率的一半来源(<code>招架率 = 闪避率 + 减伤率</code>)。武士刀终结技有 <code>+2% 防御穿透</code>/层,<strong>但这是攻击方的穿透,不作用于自己</strong>,因此不与自己的招架率冲突。</blockquote>
+<p><strong>K 值的作用</strong>:决定「多少防御算好」的手感基准。常数除法里,<code>防御 = K</code> 时正好承伤 50%。K 本身走配置(已定 10),数值调试时再调。</p>
+<h5 id="减伤公式的选型2026-10-21-定">减伤公式的选型(2026-10-21 定)</h5>
+<p><strong>采用常数除法:<code>减伤率 = 防御 / (防御 + K)</code></strong></p>
+<p><strong>为什么选这个</strong>(对比另外两种常见做法):</p>
+<table><thead><tr><th>方案</th><th>公式</th><th>特点</th></tr></thead><tbody><tr><td><strong>FF7 原作</strong></td><td><code>Damage ∝ (512 - Defense)</code></td><td>固定基数减法,防御有硬上限(512 归零)</td></tr><tr><td><strong>常数除法(采用)</strong></td><td><code>防御 / (防御 + K)</code></td><td>递减收益,天然不超 100%,低防区收益高</td></tr><tr><td>固定百分比减伤</td><td>直接给 <code>% 减伤</code></td><td>不走曲线,每点更值,但难跟防御属性挂钩</td></tr></tbody></table>
+<p><strong>选常数除法的三个理由</strong>:</p>
+<ol><li><strong>跟韧性 / 招架率咬合更好</strong> —— 招架率 = 闪避率 + 减伤率,需要能堆到较高百分比的量。常数除法直接产出百分比且有明确上限(趋近但不到 100%)。</li><li><strong>避免防御穿透算出负伤</strong> —— 武士刀终结技有 <code>+2% 防御穿透</code>/层。FF7 那种固定基数减法被打穿容易算出负数需要额外 clamp,常数除法永远落在 0~1。</li><li><strong>跟双档增幅结构兼容</strong> —— 强击模式防 -50% 在<strong>乘区</strong>上做(<code>defense_mult = 0.5</code>)比在固定值上做干净。</li></ol>
+<blockquote>参考:<br>- FF7 原作固定基数公式 <code>Damage = Power × (512 - Defense) × BaseDamage / (16 × 512)</code> —— <a href="https://ffwiki.finalfantasy.com/index.php/Damage" target="_blank" rel="noopener">Final Fantasy Wiki - Damage</a><br>- 现代 RPG 常见常数除法,例:Star Savior PVE <code>DefenceConst = 3000</code> —— <a href="https://gachawiki.info/guides/star-savior/blog/damage-formula-and-stat-optimization-guide" target="_blank" rel="noopener">GachaWiki 伤害公式</a>;银与血 <code>K = 1300</code>,DEF 1300 → 承伤 50% —— <a href="https://gachawiki.info/guides/silver-and-blood/blog/defense-formulas" target="_blank" rel="noopener">GachaWiki 防御公式</a><br>⚠️ <strong>仍待补的数值</strong>:<br>- <strong>K 值</strong>(常数除法的平衡核心,待数值调试)<br>- 背水 = g(剩余血量比例) —— 见 8.5 枪炮<br>- 韧性系数(冲击力 → 韧性值的换算比)<br>- 韧性上限的具体数值(每单位不同,需逐个配置)<br>- 招架率上限 / 是否独立乘区</blockquote>
+<hr>
+<h3 id="1.10-ui-交互设计">1.10 UI 交互设计</h3>
+<blockquote>⚠️ <strong>本层基本空白</strong> —— 系统规格书 S8 有一版「信息架构要重点处理」的提示,但完整 UI 文档还没写。</blockquote>
+<p><strong>必须呈现的信息</strong>(从战斗规则反推):</p>
+<table><thead><tr><th>信息</th><th>为什么必须显示</th><th>优先级</th></tr></thead><tbody><tr><td>行动条进度(所有单位)</td><td>决定「我该不该现在开强击」</td><td>P0</td></tr><tr><td>强击模式剩余回合(5→1 倒计时)</td><td>硬上限 5 回合,玩家必须知道还剩几回合</td><td>P0</td></tr><tr><td>韧性条 + 快满预警</td><td>破防窗口是核心攻防节奏</td><td>P0</td></tr><tr><td>破防状态醒目提示</td><td>那 1 回合 +50% 承伤,漏看就是白挨打</td><td>P0</td></tr><tr><td>各单位关键层数(刚剑 / 身外身 / 光学蓄能)</td><td>强击三手部的强度全绑在层数上</td><td>P0</td></tr><tr><td>护盾值 / 能量槽</td><td>资源循环的可视化</td><td>P1</td></tr><tr><td>结算明细(为什么这刀是这个数)</td><td>服务于设计目标 3「结算透明」</td><td>P1</td></tr><tr><td>防御穿透 / 减伤率当前值</td><td>玩家需要看到自己的防御被削了多少</td><td>P1</td></tr></tbody></table>
+<p><strong>待定</strong>:</p>
+<ul><li>指令菜单的具体交互(攻击 / 技能 / 逃跑 —— 逃跑是行动条轮到玩家时的指令之一,还是独立按钮?)</li><li>结算明细的展开方式(悬浮 / 长按 / 战报面板)</li><li>战斗界面信息密度上限(强击模式同时要显示 5 回合倒计时 + 3 种层数 + 韧性 + 护盾 + 能量)</li></ul>
+<hr>
+<h3 id="1.11-配置需求">1.11 配置需求</h3>
+<h4 id="已定-10-—-所有数值支持配置2026-10-21">已定 10 — 所有数值支持配置(2026-10-21)</h4>
+<blockquote>详细配置项清单见 <code>05-数值与配置.md</code>;这里是系统层的配置<strong>要求</strong>。</blockquote>
+<ul><li><strong>所有战斗数值(倍率 / 层数 / 阈值 / CD / 上限 / 公式常量)必须支持外部配置</strong>,不硬编码在逻辑代码里。</li><li>落法建议:Godot <code>Resource</code> 承载数值配置(<code>.tres</code> 文件),逻辑只读配置不写死数值 —— 沿用「数据 Resource + @export」的做法。</li><li>目的:<ul><li>数值调试期不用改代码、不用重编译</li><li>后续做平衡性调整 / 不同难度档位只需改配置</li><li>27 构筑 × 3 核心的数值量很大,硬编码后期维护成本高</li></ul></li><li>⚠️ 需在实现层明确:哪些是「配置项」,哪些是「结构逻辑」(如 5 回合上限、双档切换规则这类规则本身应该是代码,不是配置)。</li></ul>
+<hr>
+<h3 id="1.12-资源需求">1.12 资源需求</h3>
+<table><thead><tr><th>资源</th><th>用途</th><th>状态</th></tr></thead><tbody><tr><td>战斗背景图 × 3(章节对应)</td><td>战斗场景视觉</td><td>🔴 未定</td></tr><tr><td>角色 sprite(女仆 / 4 类敌人 / NPC)</td><td>见 03 内容设计</td><td>🔴 未定</td></tr><tr><td>行动条 / 血条 / 韧性条 / 层数图标</td><td>UI 核心元素</td><td>🔴 未定</td></tr><tr><td>特效:普攻 / 爆发 / 破防 / 强击进入 / 强击终结</td><td>状态可读性</td><td>🔴 未定</td></tr><tr><td>音效:命中 / 破防 / 强击进入 / 终结技 / 逃跑失败</td><td>反馈</td><td>🔴 未定</td></tr><tr><td>BGM:战斗 / boss / 探索</td><td>—</td><td>🔴 未定</td></tr></tbody></table>
+<blockquote><strong>资源需求是关卡预算的输入</strong> —— 3 章节 × 1 地图的体量,资源量决定了这游戏能不能一个人做完。</blockquote>
+<hr>
+<h3 id="1.13-边界条件与已知缺口">1.13 边界条件与已知缺口</h3>
+<p><strong>硬性边界(不可协商)</strong>:</p>
+<ul><li>强击模式<strong>最多 5 回合</strong>,不可延长,不因模块不同而变化</li><li><strong>终结技是强击模式的唯一出口</strong> —— 不存在「未放终结技就退普通模式」</li><li>行动条<strong>溢出清零</strong>,不保留溢出</li><li>数值必须<strong>全部走配置</strong>,逻辑代码不写死数字</li><li>强击期间产生的临时状态<strong>统一在终结技结算完毕后回滚</strong></li></ul>
+<p><strong>实现层待确认</strong>(见 §1.5 与 §1.8 的 ⚠️ 标记):</p>
+<ul><li>DOT(裂伤 / 流血)在哪个时机结算 —— 行动前 or 行动后</li><li>玩家方多个单位并列时的处理(单人主角是否无需处理)</li><li>速度被减速到 0 时,跑条速度要不要设下限 1</li><li>逃跑失败是否消耗这次行动</li><li>减伤 K 值与逃跑 K 值是否同一配置分组</li><li>胜负判定时机:每 0.2s 循环里检查,还是每次行动结算后检查</li></ul>
+<p><strong>设计层待补</strong>:</p>
+<ul><li>敌人能力与 AI(见 03 内容设计 §4)</li><li>战斗节奏目标(一场战斗预期多少回合,直接决定数值基准,见 05)</li></ul>
+<hr>
+<h2 id="2.-构筑系统s-2">2. 构筑系统(S-2)</h2>
+<blockquote>🔶 <strong>框架已定,细节在 <code>03-内容设计.md</code></strong>。本节只记系统层规则。</blockquote>
+<table><thead><tr><th>项</th><th>内容</th><th>状态</th></tr></thead><tbody><tr><td>系统定位</td><td>把玩家选择的「核心 / 手部 / 腿部」翻译成战斗内的资源循环与行为模式</td><td>✅</td></tr><tr><td>设计目标</td><td>27 构筑各自有清晰定位,不是同质的数值变体</td><td>✅ 构筑验证已做</td></tr><tr><td>系统框架</td><td>核心(3)× 手部(3)× 腿部(3)</td><td>✅</td></tr><tr><td>系统流程</td><td>选核心 → 选手部 → 选腿部 → 带入战斗</td><td>✅</td></tr><tr><td>系统入口与出口</td><td>入口:改装界面;出口:战斗系统(构筑快照)</td><td>🔶</td></tr><tr><td>核心对象</td><td><code>Module</code> / <code>ModuleFeature</code> / <code>PassiveFeature</code> / <code>CoreAmp</code> / <code>Core</code></td><td>✅ 见 §1.6</td></tr><tr><td>核心功能</td><td>特性归属规则 + 增幅双档切换</td><td>✅ 见 §1.6</td></tr><tr><td>核心规则</td><td>见「决议记录」已定 1 / 2 / 3 / 8 / 9</td><td>✅</td></tr><tr><td>公式设计</td><td>无独立公式,数值在 05</td><td>—</td></tr><tr><td>UI 交互设计</td><td>改装界面的构筑预览(切核心时手部 / 腿部增幅怎么显示)</td><td>🔴</td></tr><tr><td>配置需求</td><td>18 个模块 = 18 份 <code>.tres</code></td><td>✅ 见 05</td></tr><tr><td>资源需求</td><td>18 个模块的图标 + 差异化立绘</td><td>🔴</td></tr><tr><td>边界条件</td><td>27 组合已全验证,9 组「收益不足」待优化</td><td>✅</td></tr></tbody></table>
+<hr>
+<h2 id="3.-养成系统s-3">3. 养成系统(S-3)</h2>
+<blockquote>🔴 <strong>本系统几乎空白</strong> —— 现在只有一句「每升一级 +3 属性点(自由分配)」。</blockquote>
+<table><thead><tr><th>项</th><th>内容</th><th>状态</th></tr></thead><tbody><tr><td>系统定位</td><td>给玩家一个「变强」的长期理由,并把构筑试错变成可承受的</td><td>🔴</td></tr><tr><td>设计目标</td><td>成长曲线要支撑 1-2 小时流程,但不能破坏 27 构筑的平衡</td><td>🔴</td></tr><tr><td>系统框架</td><td>经验 → 等级 → 属性点 → 5 属性</td><td>🔴</td></tr><tr><td>系统流程</td><td>战斗胜利 → 经验 → 升级 → 分配属性点</td><td>🔴</td></tr><tr><td>系统入口与出口</td><td>入口:战斗胜利结算;出口:属性分配界面</td><td>🔴</td></tr><tr><td>核心对象</td><td><code>Character</code>(5 属性 + 派生值)</td><td>✅ 见 §1.6</td></tr><tr><td>核心功能</td><td>经验结算 / 升级 / 属性点分配</td><td>🔴</td></tr><tr><td>核心规则</td><td>每级 +3 点,自由分配</td><td>🟡 只有这一条</td></tr><tr><td>公式设计</td><td>经验曲线 / 等级上限 / 属性点总数 —— 全未定</td><td>🔴</td></tr><tr><td>UI 交互设计</td><td>属性分配界面 + 洗点</td><td>🔴</td></tr><tr><td>配置需求</td><td>经验表 / 等级表 / 属性点规则</td><td>🔴</td></tr><tr><td>资源需求</td><td>等级 / 属性图标</td><td>🔴</td></tr><tr><td>边界条件</td><td>等级上限?洗点次数?战斗内能否换装?</td><td>🔴</td></tr></tbody></table>
+<p><strong>最关键的设计问题</strong>:属性点的分配会不会让 27 构筑失去差异?如果每级 +3 点自由分配,玩家很快就会「防御拉满」或者「速度拉满」,构筑差异被数值差覆盖 —— 这正是 §8 构筑验证里「防御成为无用属性 / 错配」那类问题的放大版。<strong>建议在设计属性曲线前,先定「属性点的边际收益」上限。</strong></p>
+<hr>
+<h2 id="4.-改装系统s-4">4. 改装系统(S-4)</h2>
+<blockquote>🔶 概念已知(改装手部 / 腿部 / 核心),流程空白。</blockquote>
+<table><thead><tr><th>项</th><th>内容</th><th>状态</th></tr></thead><tbody><tr><td>系统定位</td><td>把「收集 → 配置 → 变强」串成探索的奖励循环</td><td>🔶</td></tr><tr><td>设计目标</td><td>改装的爽点应该来自「解锁新玩法」而不是「数值变大」</td><td>🔴</td></tr><tr><td>系统框架</td><td>改装界面(核心 / 手部 / 腿部三个槽)+ 解锁流程</td><td>🔴</td></tr><tr><td>系统流程</td><td>获得改装件 → 解锁 → 改装 → 构筑生效</td><td>🔴</td></tr><tr><td>系统入口与出口</td><td>入口:探索中触发 / 战果结算;出口:构筑配置 → 战斗</td><td>🔶</td></tr><tr><td>核心对象</td><td>复用 <code>Module</code></td><td>✅</td></tr><tr><td>核心功能</td><td>槽位替换 / 解锁 / 预览</td><td>🔴</td></tr><tr><td>核心规则</td><td>关卡独有改装件(潜行改件 / 防御程序)<strong>与战斗无关</strong>,是探索向的收集物</td><td>✅ 章节已定</td></tr><tr><td>公式设计</td><td>无</td><td>—</td></tr><tr><td>UI 交互设计</td><td>改装界面(三个槽 + 27 构筑预览)</td><td>🔴</td></tr><tr><td>配置需求</td><td>改装件定义 / 解锁条件</td><td>🔴</td></tr><tr><td>资源需求</td><td>改装件图标 + 界面美术</td><td>🔴</td></tr><tr><td>边界条件</td><td>战斗内能否换装?改装件是否影响战斗数值?</td><td>🔴</td></tr></tbody></table>
+<hr>
+<h2 id="5.-探索系统s-5">5. 探索系统(S-5)</h2>
+<blockquote>🔴 <strong>空白</strong>。这一层决定了 1-2 小时流程的长度承载。</blockquote>
+<table><thead><tr><th>项</th><th>内容</th><th>状态</th></tr></thead><tbody><tr><td>系统定位</td><td>承载调查 / 潜行 / boss rush 三种章节玩法,并做遭遇战触发</td><td>🔴</td></tr><tr><td>设计目标</td><td>探索不能太长(否则 1-2 小时流程撑不住),也不能没有决策点(否则就是纯跑图)</td><td>🔴</td></tr><tr><td>系统框架</td><td>1 张地图 × 3 章节(区域切换),内部有调查点 / NPC / 遭遇点 / 商店</td><td>🔴</td></tr><tr><td>系统流程</td><td>进入区域 → 移动 → 交互 → 遭遇战 / 对话 → 区域目标达成 → 下一区域</td><td>🔴</td></tr><tr><td>系统入口与出口</td><td>入口:章节开始;出口:S-1 战斗 / S-6 对话 / S-4 改装</td><td>🔴</td></tr><tr><td>核心对象</td><td>待定(区域 / 交互点 / 遭遇点)</td><td>🔴</td></tr><tr><td>核心功能</td><td>移动 / 交互 / 区域切换 / 存档点</td><td>🔴</td></tr><tr><td>核心规则</td><td>—</td><td>🔴</td></tr><tr><td>公式设计</td><td>—</td><td>—</td></tr><tr><td>UI 交互设计</td><td>地图 UI / 目标提示 / 交互提示</td><td>🔴</td></tr><tr><td>配置需求</td><td>区域数据 / 遭遇表</td><td>🔴</td></tr><tr><td>资源需求</td><td>3 套地图 tile + NPC + 场景</td><td>🔴</td></tr><tr><td>边界条件</td><td>潜行失败怎么处理?被追上是否强制战斗?</td><td>🔴</td></tr></tbody></table>
+<hr>
+<h2 id="6.-对话系统s-6">6. 对话系统(S-6)</h2>
+<blockquote>🔴 <strong>空白</strong>。线索系统的输入端。</blockquote>
+<table><thead><tr><th>项</th><th>内容</th><th>状态</th></tr></thead><tbody><tr><td>系统定位</td><td>承载叙事反转 + 分支选项 + 线索投放</td><td>🔴</td></tr><tr><td>设计目标</td><td>反转要成立,线索要在对话里自然带出,不能变成「收集任务提示」</td><td>🔴</td></tr><tr><td>系统框架</td><td>文本框 + 选项 + 条件分支 + 线索触发</td><td>🔴</td></tr><tr><td>系统流程</td><td>触发对话 → 逐句推进 → 选项 → 分支 → 结算线索 / 状态</td><td>🔴</td></tr><tr><td>系统入口与出口</td><td>入口:探索交互 / 剧情节点;出口:S-7 线索 / 战斗(某些对话触发战斗)</td><td>🔴</td></tr><tr><td>核心对象</td><td>对话节点 / 选项 / 条件 / 效果</td><td>🔴</td></tr><tr><td>核心功能</td><td>文本推进 / 选项分支 / 条件判定 / 效果派发</td><td>🔴</td></tr><tr><td>核心规则</td><td>—</td><td>🔴</td></tr><tr><td>公式设计</td><td>—</td><td>—</td></tr><tr><td>UI 交互设计</td><td>对话框布局 / 选项 / 立绘</td><td>🔴</td></tr><tr><td>配置需求</td><td>对话脚本文件格式</td><td>🔴</td></tr><tr><td>资源需求</td><td>立绘 + 背景 + 字体 + 语音?(未定)</td><td>🔴</td></tr><tr><td>边界条件</td><td>对话中途存档?选项是否限时?</td><td>🔴</td></tr></tbody></table>
+<hr>
+<h2 id="7.-线索系统s-7">7. 线索系统(S-7)</h2>
+<blockquote>🔴 <strong>空白,但它是多结局的唯一开关</strong> —— 文章说「内容设计最难的是平衡不同玩家画像」,线索系统就是这游戏的差异化所在。</blockquote>
+<table><thead><tr><th>项</th><th>内容</th><th>状态</th></tr></thead><tbody><tr><td>系统定位</td><td>把玩家的探索与对话行为,转成结局走向</td><td>🔴</td></tr><tr><td>设计目标</td><td>玩家必须<strong>知道自己差哪条线索</strong>,否则收集过程变成盲跑</td><td>🔴</td></tr><tr><td>系统框架</td><td>线索定义 / 收集状态 / 线索板 / 判定</td><td>🔴</td></tr><tr><td>系统流程</td><td>对话中触发线索 → 记入线索板 → 线索齐全 → 找店主做防御程序 → 结局分支</td><td>🔴</td></tr><tr><td>系统入口与出口</td><td>入口:S-6 对话;出口:结局判定</td><td>🔴</td></tr><tr><td>核心对象</td><td>线索 / 线索状态 / 结局条件</td><td>🔴</td></tr><tr><td>核心功能</td><td>线索收集 / 线索板展示 / 条件判定</td><td>🔴</td></tr><tr><td>核心规则</td><td>三种走向:全线索 / 部分线索 / 无线索</td><td>✅ 章节已定</td></tr><tr><td>公式设计</td><td>—</td><td>—</td></tr><tr><td>UI 交互设计</td><td>线索板(这是「差哪一条」的呈现载体)</td><td>🔴</td></tr><tr><td>配置需求</td><td>线索表 / 结局条件表</td><td>🔴</td></tr><tr><td>资源需求</td><td>线索图标</td><td>🔴</td></tr><tr><td>边界条件</td><td>部分线索走向具体是哪个结局?玩家能否中途改主意?</td><td>🔴</td></tr></tbody></table>
+<hr>
+<h2 id="8.-决议记录已定-1-14">8. 决议记录(已定 1-14)</h2>
+<blockquote>这是<strong>决策记录</strong>,不是机制正文。与正文表述有出入时,<strong>以本记录 + 日期较新者为准</strong>。<br>保留在这里而不是散进各节,是为了让「为什么这么设计」可追溯。<br>已定 10(配置化)已并入 §1.11,不在此重复。</blockquote>
+<h3 id="已定-1-—-手部特性归属火力核心">已定 1 — 手部特性归属火力核心</h3>
+<p><strong>手部模块的「特性」(OVERHEAT / ARMOR_PIERCE / CHARGE)只在火力核心下生效</strong>,暗杀和强击核心<strong>不额外设计手部特性</strong>。</p>
+<ul><li>手部特性 = 火力核心专属的被动机制,随火力核心一起成组出现</li><li>暗杀 / 强击核心下手部模块只有<strong>技能</strong>(按核心各不相同),没有额外被动</li><li>数据结构落法:<code>Module</code> 不再有跨核心的特性字段,特性挂在核心侧或按核心分支存放</li></ul>
+<h3 id="已定-2-—-强击核心改为「主动切换-+-血量代价」2026-10-21-改版">已定 2 — 强击核心改为「主动切换 + 血量代价」(2026-10-21 改版)</h3>
+<ul><li>⚠️ <strong>旧版 charge_pool 方案作废</strong>:<code>charge_pool { current, max }</code>(max=800)删掉,不再有全局充能池。</li><li>强击模式改为<strong>战斗中获得主动切换技能</strong>,玩家自己判断时机开,不靠被动充能攒满。</li><li>风险来源从「被动充能」改为<strong>各模块自定义血量代价</strong>(自伤 / 减上限 / 减防)。</li><li>退出靠<strong>各模块的「强击模式终结」技能</strong>,不再是&quot;充能耗完自动退出&quot;。</li><li>理由:让「挨打」成为玩家主动选择的风险,而不是被动攒满就开 —— 风险与收益的兑换由玩家在战斗中自行权衡。</li><li>数据结构落法见下方「待定 — STRONG 新结构」。</li></ul>
+<h3 id="已定-3-—-强击手部只有技能,无独立特性">已定 3 — 强击手部只有技能,无独立特性</h3>
+<ul><li>枪炮的「紧急维生护盾」和双刀的「吸收 / 释放刀」<strong>不算通用 ModuleFeature</strong>,是强击核心下手部模块自带的被动形态,不进 <code>hand_feature_by_core</code> 结构。</li><li>武士刀的「反击刀鞘」(闪避转招架 + 叠刚剑)同理,是强击核心下手部模块的专属被动形态。</li><li>沿用已定 1 的原则:手部在强击核心下只有「技能 + 模块自带被动」,无跨核心特性字段。</li></ul>
+<h3 id="已定-4-—-强击模式硬性-5-回合上限2026-10-21">已定 4 — 强击模式硬性 5 回合上限(2026-10-21)</h3>
+<ul><li>强击模式<strong>最多 5 回合</strong>,不可延长,不因模块不同而变化。</li><li>第 5 回合结束<strong>强制释放终结技</strong>,打完立即退出。</li><li><strong>不存在&quot;未放终结技就退普通模式&quot;的情况</strong> —— 终结技是强击模式的必经出口,不是可选。</li><li>终结技放完后<strong>一并回滚</strong>所有强击期间的临时状态(见已定 5)。</li><li>理由:强制玩家在有限窗口内决策(何时开 / 第几回合放终结技),避免苟着不放导致强度无限累积;同时保证强击期间的临时状态不会泄漏到普通模式。</li></ul>
+<h3 id="已定-5-—-到期强制释放终结技-+-状态回滚2026-10-21,含武士刀血量规则修订">已定 5 — 到期强制释放终结技 + 状态回滚(2026-10-21,含武士刀血量规则修订)</h3>
+<ul><li><strong>5 回合到期 → 系统自动释放终结技 → 立即回滚临时状态</strong>。</li><li>终结技是强击模式的<strong>唯一出口</strong>,无论玩家主动放还是系统代放,效果一致。</li><li>回滚清单(终结技效果结算完毕后统一清空):</li></ul>
+<table><thead><tr><th>临时状态</th><th>归属</th><th>回滚方式</th></tr></thead><tbody><tr><td>减半生命上限</td><td>双刀</td><td>还原到进模式前数值</td></tr><tr><td>生命值锁定 1 点</td><td>武士刀</td><td><strong>解锁,血量保持为终结技结算后的值</strong>(见下方武士刀规则)</td></tr><tr><td>【身外身】层数</td><td>武士刀</td><td>清空(已用于计算回血)</td></tr><tr><td>【刚剑】层数</td><td>武士刀</td><td>清空(终结技已消耗)</td></tr><tr><td>防御 -50% / 30% 减伤</td><td>枪炮 / 双刀</td><td>移除 modifier</td></tr><tr><td>背水 / 吸放增强 / 招架率+20%</td><td>三模块</td><td>移除 modifier</td></tr></tbody></table>
+<h4 id="武士刀血量规则-—-由【身外身】层数决定">武士刀血量规则 — 由【身外身】层数决定</h4>
+<p><strong>强击模式退出后保留的血量 = 剩余【身外身】层数 × 10%(最大生命值),最低保留 1 点。</strong></p>
+<ul><li><strong>不还原</strong>进模式前的血量 —— 进模式前的血量不参与回滚计算</li><li>强击期间挨打掉多少,出来的血量就是对应的身外身层数换算值</li><li><strong>层数消耗越多 → 出来保留的血量越少</strong> —— 这是武士刀强击模式的核心风险敞口</li><li><strong>存活下限</strong>:身外身层数耗尽(0 层)时退出强击模式,<strong>不会死亡</strong>,最低保留 <strong>1 点</strong>生命值</li><li>例:10 层全满 → 退出时回满 100%;剩 6 层 → 退出时保留 60%;层数耗尽 → 保留 1 点</li></ul>
+<blockquote>设计意图:【身外身】是「用挨打换免伤」的额度,而额度用光 = 出来血少 —— 挨得越多,免伤用得越多,但出来后越残。跟枪炮「越残越强」、双刀「减半上限」形成第三种风险形态。<br><br><strong>为什么不设硬死亡</strong>:武士刀强击模式的代价应该是「出来残血」,不是「进去就赌死」。1 点血只是「随时可能被打死」的心理压力,真正的惩罚是层数烧光后只剩 1 点 —— 下一场战斗开局几乎裸血。死亡交给后续战斗判定,不在终结技这里强制发生。</blockquote>
+<h3 id="已定-6-—-【崩解】为一次性标记,不叠层2026-10-21">已定 6 — 【崩解】为一次性标记,不叠层(2026-10-21)</h3>
+<ul><li>【崩解】<strong>不叠层</strong>,同一目标身上只存 1 层。</li><li>重复施加(技能 2 再次命中 / 强击模式招架自动附加)<strong>刷新持续时间,不叠层</strong>。</li><li>触发额外伤害后<strong>立即消耗</strong>,目标身上【崩解】清空。</li><li>理由:【崩解】是「施加 → 消费」的单一标记,叠层会让反击的额外伤害变成无限增长,失去控制感。</li></ul>
+<h3 id="已定-7-—-招架率-=-闪避率-+-防御减伤率2026-10-21">已定 7 — 招架率 = 闪避率 + 防御减伤率(2026-10-21)</h3>
+<ul><li><strong>招架率 = 闪避率 + 防御力带来的减伤率</strong>(两项相加)。</li><li>强击模式下武士刀<strong>放弃闪避</strong>(闪避率不再生效于闪避判定),转而计入招架率。</li><li>理由:让「堆防御」在强击武士刀身上变成一条可用的构筑路线 —— 高防 = 高招架 = 高刚剑层数。</li><li>⚠️ <strong>具体公式后续处理</strong>(第 4.5 数值框架阶段补):<ul><li>闪避率部分:直接取 <code>(幸运 + 速度) / 2</code>(向上取整),或需换算成百分比</li><li>防御减伤率部分:防御 = 体格,减伤率公式待定(4.5 目前没有「防御 → 减伤率」的换算式,需新增)</li><li>最终招架率是否有上限 / 是否需要独立乘区,待数值调试时定</li></ul></li></ul>
+<h3 id="待定-—-strong-新数据结构">待定 — STRONG 新数据结构</h3>
+<p>旧版结构(<code>energy_capacity</code> + <code>charge_pool</code> + <code>shield</code> + <code>strong_mode</code>)需要重写。新版大致方向:</p>
+<pre class="code"><code data-lang="">Core (STRONG) {
+  type: STRONG
+  strong_mode: {
+    active: bool
+    remaining_turns: int      // 硬性 5,不可延长(已定 4)
+    enter_skill_id: int       // 主动切换技能
+    enter_cost: ...           // 各模块自定义(枪炮: 无固定代价,靠技能自伤 / 双刀: 上限减半 / 武士刀: 生命值 1 点)
+    mods: { ... }             // 各模块自定义(枪炮背水+防-50% / 双刀吸放 100% / 武士刀招架体系)
+    exit_skill_id: int        // 强击模式终结
+    damage_accumulated: float // 枪炮终结技回血用
+  }
+  // 临时生命上限(双刀减半用),需要支持 max_hp_modifier
+  max_hp_modifier: { value: float, source: ... }
+  // 武士刀专用:生命值锁定为 1 + 身外身免伤额度
+  hp_lock: {
+    value: int,             // 1 点血
+    source: ...
+    // 注意:退出时不还原进模式前血量,血量 = 身外身剩余层数 × 10%(已定 5)
+    // hp_before / hp_ratio_before 字段已不需要
+  }
+  outside_body_stacks: int                     // 身外身,进模式时 10,退出清空(血量已按层数换算)
+  hard_edge_stacks: int                        // 刚剑,招架时累积,最多 10,终结技消耗
+}</code></pre>
+<blockquote><strong>退出流程</strong>(已定 4 + 已定 5):<br>1. 5 回合到期 或 玩家主动释放 → 强制触发 <code>exit_skill_id</code><br>2. 结算终结技效果(枪炮回血 / 双刀回满血 + 恢复上限 / 武士刀耗刚剑 + 按身外身回血)<br>3. 统一回滚临时状态:清 hp_lock、清 outside_body / hard_edge、移除所有 mods<br>4. <code>active = false</code><br><br>具体字段待 8.6 腿部设计完成后一并定稿。</blockquote>
+<hr>
+<h3 id="已定-8-—-强击腿部增幅为「双档」结构2026-10-21">已定 8 — 强击腿部增幅为「双档」结构(2026-10-21)</h3>
+<ul><li>强击核心的腿部增幅<strong>全部是双档</strong>:普通模式一套数值,<strong>强击模式内自动切到更强的一套</strong>。</li><li>这与其他两个核心不同 —— 火力 / 暗杀的腿部增幅是「攒够资源 → 换一次爆发」,强击没有资源槽,改用「进强击 → 增幅整体变强」。</li><li>数据结构落法:<code>core_amp_by_core.strong</code> 需要支持 <code>normal</code> / <code>strong_mode</code> 两套参数,而不是单一数值。</li><li>三套增幅全部挂钩「挨打」或「常驻」,没有一条是攒资源型 —— 呼应强击核心「挨打换伤害」的定位。</li></ul>
+<h3 id="已定-9-—-强击腿部三条实现规则2026-10-21">已定 9 — 强击腿部三条实现规则(2026-10-21)</h3>
+<ol><li><strong>光学护盾不叠加</strong> —— 护盾<strong>不可跨回合叠加</strong>,冷却结束后才可再次触发;已有护盾时不刷新、不追加。</li><li><strong>不动装置防御加成为持有型</strong> —— 「受到攻击时 +2/+3」是<strong>受到攻击后永久生效</strong>(直到战斗结束),不是判定时临时生效。</li><li><strong>不动装置防御加成每场清零</strong> —— 战斗结束后叠层归零,不跨战斗保留。</li></ol>
+<blockquote>由此确定 8.6 的三条实现层待定全部关闭。</blockquote>
+<h3 id="已定-11-—-减伤公式采用常数除法2026-10-21">已定 11 — 减伤公式采用常数除法(2026-10-21)</h3>
+<ul><li><strong>减伤率 = 防御 / (防御 + K)</strong>,K 为配置常量(按已定 10 走 Resource 配置,数值待调)。</li><li>选型对比与理由见 4.5「减伤公式的选型」—— 三点理由:跟招架率咬合 / 避免防御穿透负伤 / 兼容双档乘区。</li><li><code>防御 = K</code> 时承伤正好 50%,K 即「多少防御算好」的手感基准。</li><li>K 的取值待数值调试阶段定,不影响现在写代码。</li></ul>
+<h3 id="已定-12-—-韧性-/-护盾-/-buff-debuff-三套底层规则2026-10-21">已定 12 — 韧性 / 护盾 / buff-debuff 三套底层规则(2026-10-21)</h3>
+<p><strong>韧性机制</strong></p>
+<ul><li>受击时按招式的 <code>impact_multiplier</code> 累积韧性,倍率越高累积越快</li><li><strong>韧性上限按单位配置</strong>(主角 / 杂兵 / 精英 / boss 各不同)</li><li>打空 → 破防 → <strong>持续 1 回合受伤害 +50%</strong></li><li>破防的<strong>下一回合恢复全部韧性</strong>(直接回满)</li><li>招式数据结构必须含 <code>impact_multiplier</code>(见 Skill)</li></ul>
+<p><strong>护盾系统</strong></p>
+<ul><li>护盾 = <strong>临时生命值</strong>,优先承伤,溢出扣本体 HP</li><li>护盾<strong>会被击破</strong></li><li><strong>不影响韧性累积和减伤效果</strong> —— 吸收伤害 ≠ 完全免伤</li><li><strong>上限 = 当前最大生命值</strong>(双刀减半上限时跟着变)</li><li>走独立的 <code>Shield</code> 结构,不用 BuffDebuff</li></ul>
+<p><strong>buff / debuff 定位</strong></p>
+<ul><li><strong>异常状态</strong>(DOT / 硬控 / 异常抗性)—— 暂不做</li><li><strong>buff / debuff</strong>(数值增减 + 层数 + 持续回合)—— <strong>需要实现</strong></li><li>统一走 <code>BuffDebuff</code> 结构,不按用途分叉</li></ul>
+<hr>
+<h3 id="已定-13-—-防御穿透-=-减法扣防御值-+-受击结算顺序确认2026-10-21">已定 13 — 防御穿透 = 减法扣防御值 + 受击结算顺序确认(2026-10-21)</h3>
+<ul><li><strong>防御穿透的实现</strong>:攻击时扣减目标有效防御值,再进减伤率公式 —— <strong>不是独立乘区</strong>。</li></ul>
+<p>  ``<code>
+  有效防御 = max(0, 目标防御 - 穿透值)
+  减伤率   = 有效防御 / (有效防御 + K)
+  </code>``</p>
+<ul><li><strong>受击结算顺序已确认</strong>:闪避/招架判定 → 扣防御穿透算有效防御 → 减伤率 → 承伤 → 破防判定 ×1.5 → 护盾吸收 → 累积韧性。</li><li>副作用提醒:常数除法递减收益意味着<strong>低防段减同样防御值收益更大</strong>,高防角色被穿透时减伤跌幅更明显(符合直觉)。</li><li>武士刀终结技的 <code>+2% 防御穿透</code>/层 是<strong>攻击方穿透</strong>,不作用于自己,与自己招架率不冲突。</li></ul>
+<h3 id="已定-14-—-强击光学装置改攻击向2026-10-21,第-9-步构筑验证后修订">已定 14 — 强击光学装置改攻击向(2026-10-21,第 9 步构筑验证后修订)</h3>
+<ul><li><strong>强击模式下的光学装置增幅从「挨打给护盾」改为「【光学蓄能】叠攻击」</strong>:<ul><li>受到伤害时获得 1 层,<strong>最多 10 层</strong>,每层提升攻击力 <strong>2%</strong></li><li>满 10 层 = 攻击力 +20%</li></ul></li><li><strong>普通模式保留护盾不变</strong>(火力 / 暗杀核心下手部不吃防御,护盾增幅无冲突)</li><li><strong>原因</strong>(见 9.4 验证):#23 双刀+光学(双重血量惩罚)、#26 武士刀+光学(护盾削弱挨打次数,与手部核心对立)。根因是强击三手部全部自带防御向机制,腿部再给防御就撞车。</li><li><strong>【光学蓄能】为持有型叠层,战斗结束清零</strong>(同不动装置)。</li><li>路线选择:走<strong>路线 A(改腿部)</strong>而非路线 B(改手部)—— 影响面小,只动强击 × 光学的 3 个组合,且保留强击核心「挨打换伤害」主线上「挨打」的挂钩点。</li></ul>
+  <footer>Maid RPG 设计文档 · 赛博朋克 / 机械女仆 / 搞笑无厘头 · Godot · 独立开发<br>
+  本页由 <code>site/build.py</code> 从仓库内的 Markdown 生成,内容以仓库为准。</footer>
+</main>
+</div>
+<div class="toc"><b>本页目录</b><a class="l1" href="#02-·-系统设计文档">02 · 系统设计文档</a><a class="l2" href="#0.-系统总览">0. 系统总览</a><a class="l3" href="#0.1-系统清单">0.1 系统清单</a><a class="l3" href="#0.2-系统入口与出口">0.2 系统入口与出口</a><a class="l3" href="#0.3-系统间关系">0.3 系统间关系</a><a class="l2" href="#1.-战斗系统s-1">1. 战斗系统(S-1)</a><a class="l3" href="#1.1-系统定位">1.1 系统定位</a><a class="l3" href="#1.2-设计目标">1.2 设计目标</a><a class="l3" href="#1.3-系统框架">1.3 系统框架</a><a class="l3" href="#1.4-系统入口与出口">1.4 系统入口与出口</a><a class="l3" href="#1.5-系统流程">1.5 系统流程</a><a class="l3" href="#1.6-核心对象">1.6 核心对象</a><a class="l3" href="#1.7-核心功能-——-机制清单">1.7 核心功能 —— 机制清单</a><a class="l3" href="#1.8-核心规则">1.8 核心规则</a><a class="l3" href="#1.9-公式设计">1.9 公式设计</a><a class="l3" href="#1.10-ui-交互设计">1.10 UI 交互设计</a><a class="l3" href="#1.11-配置需求">1.11 配置需求</a><a class="l3" href="#1.12-资源需求">1.12 资源需求</a><a class="l3" href="#1.13-边界条件与已知缺口">1.13 边界条件与已知缺口</a><a class="l2" href="#2.-构筑系统s-2">2. 构筑系统(S-2)</a><a class="l2" href="#3.-养成系统s-3">3. 养成系统(S-3)</a><a class="l2" href="#4.-改装系统s-4">4. 改装系统(S-4)</a><a class="l2" href="#5.-探索系统s-5">5. 探索系统(S-5)</a><a class="l2" href="#6.-对话系统s-6">6. 对话系统(S-6)</a><a class="l2" href="#7.-线索系统s-7">7. 线索系统(S-7)</a><a class="l2" href="#8.-决议记录已定-1-14">8. 决议记录(已定 1-14)</a><a class="l3" href="#已定-1-—-手部特性归属火力核心">已定 1 — 手部特性归属火力核心</a><a class="l3" href="#已定-2-—-强击核心改为「主动切换-+-血量代价」2026-10-21-改版">已定 2 — 强击核心改为「主动切换 + 血量代价」(2026-10-21 改版)</a><a class="l3" href="#已定-3-—-强击手部只有技能,无独立特性">已定 3 — 强击手部只有技能,无独立特性</a><a class="l3" href="#已定-4-—-强击模式硬性-5-回合上限2026-10-21">已定 4 — 强击模式硬性 5 回合上限(2026-10-21)</a><a class="l3" href="#已定-5-—-到期强制释放终结技-+-状态回滚2026-10-21,含武士刀血量规则修订">已定 5 — 到期强制释放终结技 + 状态回滚(2026-10-21,含武士刀血量规则修订)</a><a class="l3" href="#已定-6-—-【崩解】为一次性标记,不叠层2026-10-21">已定 6 — 【崩解】为一次性标记,不叠层(2026-10-21)</a><a class="l3" href="#已定-7-—-招架率-=-闪避率-+-防御减伤率2026-10-21">已定 7 — 招架率 = 闪避率 + 防御减伤率(2026-10-21)</a><a class="l3" href="#待定-—-strong-新数据结构">待定 — STRONG 新数据结构</a><a class="l3" href="#已定-8-—-强击腿部增幅为「双档」结构2026-10-21">已定 8 — 强击腿部增幅为「双档」结构(2026-10-21)</a><a class="l3" href="#已定-9-—-强击腿部三条实现规则2026-10-21">已定 9 — 强击腿部三条实现规则(2026-10-21)</a><a class="l3" href="#已定-11-—-减伤公式采用常数除法2026-10-21">已定 11 — 减伤公式采用常数除法(2026-10-21)</a><a class="l3" href="#已定-12-—-韧性-/-护盾-/-buff-debuff-三套底层规则2026-10-21">已定 12 — 韧性 / 护盾 / buff-debuff 三套底层规则(2026-10-21)</a><a class="l3" href="#已定-13-—-防御穿透-=-减法扣防御值-+-受击结算顺序确认2026-10-21">已定 13 — 防御穿透 = 减法扣防御值 + 受击结算顺序确认(2026-10-21)</a><a class="l3" href="#已定-14-—-强击光学装置改攻击向2026-10-21,第-9-步构筑验证后修订">已定 14 — 强击光学装置改攻击向(2026-10-21,第 9 步构筑验证后修订)</a></div>
+</body></html>

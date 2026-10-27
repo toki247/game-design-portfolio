@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>结构 · 挑战 · 引导 · 难度 · Maid RPG 设计文档</title>
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<div class="wrap">
+<aside>
+  <div class="brand"><b>Maid RPG</b><span>设计文档 · 五层结构</span></div>
+  <nav><a class="" href="index.html"><i></i>总览</a><a class="" href="01-GDD.html"><i></i>① GDD</a><a class="" href="02-系统设计.html"><i></i>② 系统设计</a><a class="" href="03-内容设计.html"><i></i>③ 内容设计</a><a class="on" href="04-关卡设计.html"><i></i>④ 关卡设计</a><a class="" href="05-数值与配置.html"><i></i>⑤ 数值与配置</a><a class="" href="系统规格书.html"><i></i>执行层</a></nav>
+</aside>
+<main>
+  <div class="pagehead">
+    <div class="kicker">④ 关卡设计</div>
+    <h1>结构 · 挑战 · 引导 · 难度</h1>
+    <p>3 章节 × 1 地图</p>
+  </div>
+  <blockquote><strong>职责</strong>:规划关卡结构、挑战配置、玩家引导及难度节奏,组织游戏内容,引导玩家获得预期的核心体验。<br><strong>上游</strong>:<code>01-GDD.md</code>(核心体验)、<code>03-内容设计.md</code>(往哪放)<br><strong>下游</strong>:无(关卡是内容的编排层)<br><strong>状态</strong>:🔴 <strong>本层最薄弱</strong> —— 只有章节骨架,难度曲线 / 玩家引导 / 关卡布局全空白</blockquote>
+<hr>
+<h2 id="1.-关卡结构总览">1. 关卡结构总览</h2>
+<table><thead><tr><th>章节</th><th>区域</th><th>核心玩法</th><th>改装件</th><th>战斗内容</th><th>结尾</th></tr></thead><tbody><tr><td>1</td><td>黑街外围</td><td>调查 + 教训</td><td>基础(店主教)</td><td>小混混</td><td>找到抓走小姐的车</td></tr><tr><td>2</td><td>黑帮大楼</td><td>潜行</td><td>潜行改件</td><td>杂兵 + 机械安保 boss(老大办公室)</td><td>暗门电梯 → 地下室</td></tr><tr><td>3</td><td>大楼地下室</td><td>Boss rush(地下一层 → 二层 → 三层)</td><td>防御程序</td><td>层层 boss,最后打老大</td><td>救出小姐 → 反被木马 → 小姐是最终 boss</td></tr></tbody></table>
+<p><strong>结构特征</strong>:</p>
+<ul><li><strong>3 章节 × 1 地图</strong> —— 每章一张地图,内部靠区域切换做纵深</li><li><strong>三种玩法递进</strong>:调查(开放)→ 潜行(限时 / 隐蔽)→ boss rush(纯战斗压力)</li><li><strong>每章一个改装件</strong>,且都<strong>与战斗无关</strong> —— 探索向奖励,不污染 27 构筑的平衡</li><li><strong>改装件同时是机制门槛</strong>:潜行改件决定能不能过章节 2,防御程序决定能不能触发好结局</li></ul>
+<hr>
+<h2 id="2.-章节流程">2. 章节流程</h2>
+<h4 id="章节-1:黑街外围">章节 1:黑街外围</h4>
+<ul><li><strong>玩法</strong>:调查 + 教训</li><li><strong>流程</strong>:找车牌号 → 教训小混混 → 打听消息 → 结识非法改造武器店主(解锁改装系统)→ 找到抓走小姐的车</li><li><strong>改装</strong>:基础(店主教)</li><li><strong>战斗</strong>:小混混</li></ul>
+<h4 id="章节-2:黑帮大楼">章节 2:黑帮大楼</h4>
+<ul><li><strong>玩法</strong>:潜行</li><li><strong>改装</strong>:<strong>潜行改件</strong>(关卡独有,与战斗无关)</li><li><strong>流程</strong>:隐身潜入 → 楼内调查 → 找到&quot;幕后黑手可能是黑帮老大&quot;线索 → 杀上顶层</li><li><strong>战斗</strong>:杂兵 + 机械安保 boss(老大办公室)</li><li><strong>结尾</strong>:暗门电梯 → 地下室</li></ul>
+<h4 id="章节-3:大楼地下室">章节 3:大楼地下室</h4>
+<ul><li><strong>玩法</strong>:<strong>Boss rush</strong>(地下一层 → 二层 → 三层)</li><li><strong>改装</strong>:<strong>防御程序</strong>(关卡独有,与战斗无关,用于避免被小姐植入的木马控制)</li><li><strong>流程</strong>:层层 boss → 打老大 → 救出昏迷的小姐 → <strong>小姐植入木马,改写女仆命令服从对象(哥哥)= 小姐的真正计谋</strong></li><li><strong>隐藏</strong>:章节 1+2 搜集到&quot;小姐是幕后黑手&quot;线索 → 找店主做防御程序 → 触发好结局</li><li><strong>多结局设计</strong>:全线索 / 部分线索 / 无线索 三种走向</li></ul>
+<hr>
+<h2 id="3.-挑战配置">3. 挑战配置</h2>
+<blockquote>⚠️ <strong>本节空白</strong> —— 现在只有「这一章打什么怪」,没有「这一章玩家要面对什么挑战、难度怎么爬」。</blockquote>
+<p>每个战斗遭遇点应该配置的东西(建议模板):</p>
+<table><thead><tr><th>项</th><th>说明</th><th>状态</th></tr></thead><tbody><tr><td>遭遇类型</td><td>普通战 / 精英战 / boss</td><td>🔴</td></tr><tr><td>敌人组成</td><td>数量 + 类型 + 站位</td><td>🔴</td></tr><tr><td>地形 / 位置</td><td>是否影响行动条(速度差)?</td><td>🔴</td></tr><tr><td>预期回合数</td><td>这场战斗应该打多久</td><td>🔴</td></tr><tr><td>预期伤害交换比</td><td>玩家应该挨多少、打多少</td><td>🔴</td></tr><tr><td>首次遭遇 / 重复遭遇</td><td>掉落是否递减</td><td>🔴</td></tr><tr><td>失败惩罚</td><td>死了回哪、掉什么</td><td>🔴</td></tr><tr><td>逃跑是否允许</td><td>boss 禁逃(已定)</td><td>🟡</td></tr></tbody></table>
+<p><strong>章节级挑战设计</strong>(还没想但必须想):</p>
+<table><thead><tr><th>章节</th><th>玩家在这里要学会什么</th><th>对应的机制</th></tr></thead><tbody><tr><td>1</td><td>基础战斗循环 + 第一次改装</td><td>行动条 / 普通攻击 / 教学改装</td></tr><tr><td>2</td><td>潜行 ≠ 战斗,两条线互相独立</td><td>潜行改件 / 关卡独有改装</td></tr><tr><td>3</td><td>构筑要够强才能过 boss rush</td><td>27 构筑的最终检验</td></tr></tbody></table>
+<hr>
+<h2 id="4.-玩家引导">4. 玩家引导</h2>
+<blockquote>⚠️ <strong>本节空白</strong>。1-2 小时流程 + 新机制密度高(3 核心 / 27 构筑 / 韧性 / 护盾 / 强击),引导不做玩家会直接卡住。</blockquote>
+<p><strong>需要引导的机制清单</strong>(按首次出现顺序):</p>
+<table><thead><tr><th>#</th><th>机制</th><th>首次出现</th><th>引导方式</th><th>状态</th></tr></thead><tbody><tr><td>1</td><td>行动条 / 谁先动</td><td>章节 1 第一战</td><td>—</td><td>🔴</td></tr><tr><td>2</td><td>普通攻击 / 技能 / 能量槽</td><td>章节 1 第一战</td><td>—</td><td>🔴</td></tr><tr><td>3</td><td>改装(换核心 / 手部 / 腿部)</td><td>章节 1 店主</td><td>—</td><td>🔴</td></tr><tr><td>4</td><td>韧性 / 破防</td><td>章节 1 第一战</td><td>—</td><td>🔴</td></tr><tr><td>5</td><td>强击模式(主动切换 / 5 回合 / 终结技)</td><td>战斗中主动开</td><td>—</td><td>🔴</td></tr><tr><td>6</td><td>护盾</td><td>装了光学装置才出现</td><td>—</td><td>🔴</td></tr><tr><td>7</td><td>招架 / 刚剑 / 身外身</td><td>强击武士刀</td><td>—</td><td>🔴</td></tr><tr><td>8</td><td>逃跑</td><td>章节 1 第一战</td><td>—</td><td>🔴</td></tr><tr><td>9</td><td>经验 / 升级 / 加点</td><td>第一战胜利后</td><td>—</td><td>🔴</td></tr><tr><td>10</td><td>线索收集</td><td>章节 1 对话</td><td>—</td><td>🔴</td></tr><tr><td>11</td><td>潜行</td><td>章节 2</td><td>—</td><td>🔴</td></tr><tr><td>12</td><td>防御程序 / 多结局</td><td>章节 3</td><td>—</td><td>🔴</td></tr></tbody></table>
+<p><strong>引导原则</strong>(待定):</p>
+<ul><li>用「战斗内第一次遭遇自然触发」而不是文字教程 —— 战斗系统是回合制,提示成本低</li><li>强击模式是最需要引导的(主动技能 + 5 回合硬上限 + 终结技唯一出口,三个概念)</li><li>引导不能进战斗内 UI 打断节奏,应该放在战斗之间的准备界面</li></ul>
+<hr>
+<h2 id="5.-难度节奏">5. 难度节奏</h2>
+<blockquote>⚠️ <strong>本节空白</strong>。这是本层最重要也最容易做的一节 —— 但<strong>必须等战斗手感定了再排</strong>,否则排出来的曲线是假的。</blockquote>
+<p><strong>已有的节奏锚点</strong>(来自战斗规则):</p>
+<table><thead><tr><th>锚点</th><th>值</th><th>出处</th></tr></thead><tbody><tr><td>速度 100 → 一次行动</td><td>约 5 秒</td><td>02 §1.5</td></tr><tr><td>速度 50 → 一次行动</td><td>约 10 秒</td><td>02 §1.5</td></tr><tr><td>一场战斗 20 回合</td><td>约 100 秒</td><td>02 §1.5 ⚠️ 待验证</td></tr><tr><td>强击模式</td><td>固定 5 回合</td><td>已定 4</td></tr></tbody></table>
+<p><strong>建议的难度曲线骨架</strong>(待数值调试校准):</p>
+<pre class="code"><code data-lang="">章节1  ▁▂▂▃     教学 → 小混混 → 第一次改装
+章节2  ▃▃▄▅     潜行(换维度,不换数值)+ 杂兵 → 机械安保 boss
+章节3  ▅▆▇█     boss rush 三连,难度靠敌人压迫矩阵递进</code></pre>
+<p><strong>难度该靠什么提升</strong>(待定,这是关卡设计最核心的取舍):</p>
+<table><thead><tr><th>手段</th><th>效果</th><th>代价</th></tr></thead><tbody><tr><td>敌人属性(5 属性)拉高</td><td>直接</td><td>无脑,且会跟玩家的属性点系统打架</td></tr><tr><td>敌人韧性上限拉高</td><td>破防窗口变窄</td><td>直接压缩双刀 / 强击构筑</td></tr><tr><td>敌人速度拉高</td><td>抢行动条</td><td>压迫感强,体验最直观</td></tr><tr><td>敌人数量增加</td><td>AOE 压力</td><td>单人主角 vs 多敌,行动条会乱</td></tr><tr><td><strong>压迫矩阵轮换</strong>(高防 / 高闪避 / 高回复)</td><td><strong>逼玩家换构筑</strong></td><td>需要设计,工作量大,但这是唯一能体现 27 构筑价值的方式</td></tr></tbody></table>
+<blockquote><strong>倾向</strong>:难度主要走「压迫矩阵轮换」而不是单纯拉数值。理由是 27 构筑是这套游戏的资产,如果所有敌人都只是血厚防高,那 27 构筑的意义就只剩数值差异。<br>压迫矩阵的定义见 <code>03-内容设计.md</code> §4.3。</blockquote>
+<hr>
+<h2 id="6.-关卡布局与遭遇点">6. 关卡布局与遭遇点</h2>
+<blockquote>⚠️ <strong>空白</strong>。3 章节 × 1 地图的布局还没画。</blockquote>
+<table><thead><tr><th>项</th><th>章节 1</th><th>章节 2</th><th>章节 3</th></tr></thead><tbody><tr><td>地图尺寸</td><td>🔴</td><td>🔴</td><td>🔴</td></tr><tr><td>区域划分</td><td>🔴</td><td>🔴</td><td>🔴</td></tr><tr><td>调查点 / NPC 位置</td><td>🔴</td><td>🔴</td><td>🔴</td></tr><tr><td>遭遇战触发点</td><td>🔴</td><td>🔴</td><td>🔴</td></tr><tr><td>存档点</td><td>🔴</td><td>🔴</td><td>🔴</td></tr><tr><td>改装件获取位置</td><td>🔴</td><td>🔴</td><td>🔴</td></tr><tr><td>线索获取位置</td><td>🔴</td><td>🔴</td><td>🔴</td></tr></tbody></table>
+<hr>
+<h2 id="7.-本层缺口清单">7. 本层缺口清单</h2>
+<table><thead><tr><th>缺口</th><th>影响</th><th>优先级</th></tr></thead><tbody><tr><td><strong>难度节奏曲线</strong></td><td>决定 1-2 小时流程的爽感曲线;但需等战斗手感定稿</td><td>🔴 P0(延后)</td></tr><tr><td><strong>玩家引导清单</strong></td><td>12 个新机制,不做引导玩家会卡死</td><td>🔴 P0</td></tr><tr><td><strong>挑战配置模板</strong></td><td>每个遭遇点该配什么</td><td>🟡 P1</td></tr><tr><td><strong>关卡布局</strong></td><td>3 张地图的区域划分</td><td>🟡 P1</td></tr><tr><td><strong>失败惩罚 / 存档点粒度</strong></td><td>1-2 小时流程里死了怎么重来</td><td>🟡 P1</td></tr><tr><td><strong>潜行玩法规则</strong></td><td>章节 2 的完整规则</td><td>🔴 P0(在 S-5)</td></tr><tr><td><strong>防御程序玩法规则</strong></td><td>章节 3 + 好结局前置,规则完全空白</td><td>🔴 P0(在 S-5)</td></tr></tbody></table>
+  <footer>Maid RPG 设计文档 · 赛博朋克 / 机械女仆 / 搞笑无厘头 · Godot · 独立开发<br>
+  本页由 <code>site/build.py</code> 从仓库内的 Markdown 生成,内容以仓库为准。</footer>
+</main>
+</div>
+<div class="toc"><b>本页目录</b><a class="l1" href="#04-·-关卡设计文档">04 · 关卡设计文档</a><a class="l2" href="#1.-关卡结构总览">1. 关卡结构总览</a><a class="l2" href="#2.-章节流程">2. 章节流程</a><a class="l2" href="#3.-挑战配置">3. 挑战配置</a><a class="l2" href="#4.-玩家引导">4. 玩家引导</a><a class="l2" href="#5.-难度节奏">5. 难度节奏</a><a class="l2" href="#6.-关卡布局与遭遇点">6. 关卡布局与遭遇点</a><a class="l2" href="#7.-本层缺口清单">7. 本层缺口清单</a></div>
+</body></html>

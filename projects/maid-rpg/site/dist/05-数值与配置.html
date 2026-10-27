@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>公式 · 配置入口 · 待定登记 · Maid RPG 设计文档</title>
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<div class="wrap">
+<aside>
+  <div class="brand"><b>Maid RPG</b><span>设计文档 · 五层结构</span></div>
+  <nav><a class="" href="index.html"><i></i>总览</a><a class="" href="01-GDD.html"><i></i>① GDD</a><a class="" href="02-系统设计.html"><i></i>② 系统设计</a><a class="" href="03-内容设计.html"><i></i>③ 内容设计</a><a class="" href="04-关卡设计.html"><i></i>④ 关卡设计</a><a class="on" href="05-数值与配置.html"><i></i>⑤ 数值与配置</a><a class="" href="系统规格书.html"><i></i>执行层</a></nav>
+</aside>
+<main>
+  <div class="pagehead">
+    <div class="kicker">⑤ 数值与配置</div>
+    <h1>公式 · 配置入口 · 待定登记</h1>
+    <p>所有数值全走 Godot .tres</p>
+  </div>
+  <blockquote><strong>职责</strong>:制定和调整游戏中的各项数值,控制成长速度、资源产出及玩法平衡,并将设计结果转化为可执行的配置数据。<br><strong>上游</strong>:<code>02-系统设计.md</code>(规则 → 公式)、<code>03-内容设计.md</code>(具体模块 → 数值)<br><strong>下游</strong>:Godot <code>config/*.tres</code>(唯一落地点)<br><strong>状态</strong>:公式已定 ✅ / 全局占位值已有 🟡 / <strong>大量数值待定</strong> 🔴</blockquote>
+<hr>
+<h2 id="0.-两条铁律">0. 两条铁律</h2>
+<table><thead><tr><th>#</th><th>原则</th><th>落地方式</th></tr></thead><tbody><tr><td>1</td><td><strong>所有数值走配置</strong></td><td>倍率 / 层数 / 阈值 / CD / 上限 / 公式常量全部走 Godot <code>Resource</code> <code>.tres</code>,逻辑代码不写死数字</td></tr><tr><td>2</td><td><strong>规则是代码,数值是配置</strong></td><td>「强击最多 5 回合」「双档切换」「结算六步顺序」这类<strong>规则本身</strong>写死在代码;<strong>具体数值</strong>走配置</td></tr></tbody></table>
+<blockquote><strong>为什么这条这么重要</strong>:27 构筑 × 3 核心的数值量很大,硬编码后期维护成本极高。而且数值调试期改配置不用重编译,是战斗手感迭代速度的关键。</blockquote>
+<hr>
+<h2 id="1.-公式速查">1. 公式速查</h2>
+<blockquote>完整推导与选型论证在 <code>02-系统设计.md</code> §1.9,这里只放速查表。</blockquote>
+<h3 id="1.1-属性派生">1.1 属性派生</h3>
+<table><thead><tr><th>数值</th><th>公式</th></tr></thead><tbody><tr><td>HP</td><td>体格 × 2</td></tr><tr><td>攻击力</td><td>力量 + 武器攻击 + buff</td></tr><tr><td>防御</td><td>体格</td></tr><tr><td>行动条速度</td><td>速度 × 2(条 / 秒)</td></tr><tr><td>闪避率</td><td>(幸运 + 速度) / 2(向上取整)</td></tr><tr><td>暴击率</td><td>(技巧 + 幸运) / 2</td></tr><tr><td>暴击伤害</td><td>× 1.5</td></tr><tr><td>命中率</td><td>技巧 − 对方闪避</td></tr><tr><td>冲击力</td><td>招式伤害 × 招式冲击力倍率</td></tr><tr><td>屏障最大值</td><td>防御 × 5</td></tr></tbody></table>
+<h3 id="1.2-受击结算六步,顺序不可换">1.2 受击结算(六步,顺序不可换)</h3>
+<pre class="code"><code data-lang="">1. 判定闪避 / 招架        → 未命中直接返回 0
+2. 扣防御穿透 → 有效防御 = max(0, 防御 − 穿透)
+3. 减伤率 = 有效防御 / (有效防御 + K) → 最终承伤
+4. 判定破防(韧性打空)     → × 1.5
+5. 护盾优先吸收 → 溢出扣 HP
+6. 累积韧性</code></pre>
+<h3 id="1.3-行动条">1.3 行动条</h3>
+<table><thead><tr><th>项</th><th>值</th></tr></thead><tbody><tr><td>满值</td><td>1000</td></tr><tr><td>跑条速度</td><td>速度 × 2(条 / 秒)</td></tr><tr><td>tick</td><td>0.2 秒</td></tr><tr><td>并列</td><td>玩家先动</td></tr><tr><td>溢出</td><td>清零(不保留)</td></tr></tbody></table>
+<h3 id="1.4-逃跑">1.4 逃跑</h3>
+<pre class="code"><code data-lang="">成功率 = 速度 / (速度 + K_escape)
+BOSS 战禁逃,无消耗</code></pre>
+<blockquote>⚠️ <strong>K_escape 与减伤的 K 是两个不同的常数</strong>,建议在配置里分开命名 / 分组,别混。</blockquote>
+<hr>
+<h2 id="2.-全局配置入口">2. 全局配置入口</h2>
+<p>建议 <code>config/combat_config.tres</code> 承载以下字段(初版占位):</p>
+<table><thead><tr><th>字段</th><th>类型</th><th>占位值</th><th>说明</th></tr></thead><tbody><tr><td><code>action_gauge_max</code></td><td>int</td><td>1000</td><td>行动条满值</td></tr><tr><td><code>action_gauge_speed_mult</code></td><td>float</td><td>2.0</td><td>行动条速度 = 速度 × 此值</td></tr><tr><td><code>tick_interval</code></td><td>float</td><td>0.2</td><td>tick 间隔(秒)</td></tr><tr><td><code>k_damage_reduction</code></td><td>float</td><td><strong>100(待定)</strong></td><td>减伤常数除法的 K</td></tr><tr><td><code>k_escape</code></td><td>float</td><td><strong>100(待定)</strong></td><td>逃跑公式的 K</td></tr><tr><td><code>tenacity_coefficient</code></td><td>float</td><td><strong>待定</strong></td><td>冲击力 → 韧性累积的换算比</td></tr><tr><td><code>broken_damage_mult</code></td><td>float</td><td>1.5</td><td>破防增伤倍率</td></tr><tr><td><code>shield_max_ratio</code></td><td>float</td><td>1.0</td><td>护盾上限 = 当前最大 HP × 此值</td></tr><tr><td><code>strong_mode_max_turns</code></td><td>int</td><td>5</td><td>强击模式回合上限(规则写死代码,此处仅供 UI 显示)</td></tr><tr><td><code>strong_exit_hp_ratio</code></td><td>float</td><td>0.10</td><td>武士刀退出保留血量 = 身外身层数 × 此值</td></tr></tbody></table>
+<blockquote><strong><code>strong_mode_max_turns</code> 特殊说明</strong>:它既是规则又是 UI 需要显示的数字。规则在代码里写死(不可配),UI 读取配置里的同一份值 —— 两者必须一致,配置只作显示用途。</blockquote>
+<hr>
+<h2 id="3.-成长与产出">3. 成长与产出</h2>
+<blockquote>🔴 <strong>本节几乎空白</strong> —— 战斗系统只写了「经验根据敌方等级获得对应经验值,具体数值后续拉表」。</blockquote>
+<table><thead><tr><th>项</th><th>内容</th><th>状态</th></tr></thead><tbody><tr><td>经验公式</td><td>按敌人等级给经验</td><td>🔴 未拉表</td></tr><tr><td>等级上限</td><td>—</td><td>🔴 未定</td></tr><tr><td>每级属性点</td><td>+3(自由分配)</td><td>✅ 已定</td></tr><tr><td>属性点总数</td><td>等级上限 × 3</td><td>🔴 依赖等级上限</td></tr><tr><td>升级所需经验曲线</td><td>—</td><td>🔴</td></tr><tr><td>掉落表</td><td>掉落什么、概率</td><td>🔴</td></tr><tr><td>金币</td><td>是否存在</td><td>🔴</td></tr><tr><td>模块解锁</td><td>靠掉落还是靠店主卖</td><td>🔴</td></tr><tr><td>线索</td><td>掉落还是对话触发</td><td>🔴</td></tr></tbody></table>
+<blockquote><strong>设计风险提示</strong>:属性点总量如果偏大,玩家的等级会盖过构筑差异 —— 「防御拉满」会变成万能解,27 构筑的设计就废了。<strong>建议先定属性点的边际收益上限,再拉经验曲线。</strong></blockquote>
+<hr>
+<h2 id="4.-待定数值登记表">4. 待定数值登记表</h2>
+<blockquote>这张表是本文档的核心用途 —— 所有「还没定」的数字集中在这里,填一个划一个。</blockquote>
+<table><thead><tr><th>#</th><th>待定项</th><th>影响系统</th><th>当前占位</th><th>决策依据 / 备注</th><th>状态</th></tr></thead><tbody><tr><td>1</td><td><strong>K(减伤常数除法)</strong></td><td>全战斗</td><td>100</td><td><code>防御 = K</code> 时承伤正好 50%,K = 「多少防御算好」的手感基准</td><td>🔴 待调</td></tr><tr><td>2</td><td><strong>K(逃跑)</strong></td><td>战斗</td><td>100</td><td>与 #1 是两个常数,建议分开命名</td><td>🔴 待调</td></tr><tr><td>3</td><td><strong>背水公式 g(剩余血量比例)</strong></td><td>强击 × 枪炮</td><td>未定</td><td>强击枪炮「越残越强」的收益曲线</td><td>🔴 未定</td></tr><tr><td>4</td><td><strong>韧性系数</strong></td><td>全战斗</td><td>未定</td><td>冲击力 → 韧性值的换算比,决定破防频率</td><td>🔴 未定</td></tr><tr><td>5</td><td><strong>各单位韧性上限</strong></td><td>全战斗</td><td>未定</td><td>主角 / 杂兵 / 精英 / boss 各不同,需逐个配置</td><td>🔴 未定</td></tr><tr><td>6</td><td><strong>招架率上限 / 是否独立乘区</strong></td><td>强击 × 武士刀</td><td>未定</td><td>招架率 = 闪避率 + 减伤率,两项相加会不会溢出</td><td>🔴 未定</td></tr><tr><td>7</td><td><strong>DOT 结算时机</strong></td><td>全战斗</td><td>未定</td><td>回合制惯例是行动前 / 行动后,需定</td><td>🟡 实现层</td></tr><tr><td>8</td><td><strong>跑条速度下限</strong></td><td>全战斗</td><td>未定</td><td>速度被减到 0 时要不要设下限 1</td><td>🟡 实现层</td></tr><tr><td>9</td><td><strong>战斗节奏基准</strong></td><td>数值调试</td><td>未定</td><td>速度 100 → 5 秒/次行动,20 回合 = 100 秒,玩家能接受吗</td><td>🟡 待验证</td></tr><tr><td>10</td><td><strong>STRONG 新数据结构定稿</strong></td><td>系统</td><td>草稿见 02 §8</td><td>模块设计已 18/18 完成,可以定稿了</td><td>🟡 可定稿</td></tr><tr><td>11</td><td><strong>经验曲线 / 等级上限 / 属性点总数</strong></td><td>养成</td><td>未定</td><td>见 §3</td><td>🔴 未定</td></tr><tr><td>12</td><td><strong>敌人 5 属性 / 韧性上限 / 招表</strong></td><td>敌人</td><td>未定</td><td>见 03 §4</td><td>🔴 未定</td></tr><tr><td>13</td><td><strong>9 组「收益不足」组合的调优</strong></td><td>构筑</td><td>—</td><td>#3 #5 #6 #9 #11 #12 #22 #24 #25,不阻塞</td><td>🟡 可延后</td></tr><tr><td>14</td><td><strong>难度曲线参数</strong></td><td>关卡</td><td>未定</td><td>见 04 §5</td><td>🔴 待战斗手感定稿</td></tr></tbody></table>
+<hr>
+<h2 id="5.-数值调试基准">5. 数值调试基准</h2>
+<p>调平衡时用的参考坐标(已知):</p>
+<table><thead><tr><th>场景</th><th>数值</th><th>说明</th></tr></thead><tbody><tr><td>速度 100</td><td>约 5 秒一次行动</td><td>每秒涨 200 条,1000 条跑满</td></tr><tr><td>速度 50</td><td>约 10 秒一次行动</td><td>每秒涨 100 条</td></tr><tr><td>每 tick 增量(速度 100)</td><td>+40 条</td><td>100 × 2 × 0.2</td></tr><tr><td>一次战斗 20 回合</td><td>约 100 秒</td><td>⚠️ 基准假设,未验证</td></tr><tr><td>减伤率</td><td>防御 / (防御 + K)</td><td>K=100 时:防 50 → 33%,防 100 → 50%,防 200 → 67%</td></tr><tr><td>防御穿透</td><td>减法扣有效防御</td><td>低防段收益更大(常数除法递减)</td></tr></tbody></table>
+<p><strong>调试建议</strong>:</p>
+<ul><li>任何一条曲线改动后,重跑一遍 <code>27 构筑验证</code> 的判定表,看有没有组合从 ⚠️ 变 ❌</li><li>改 <code>K</code> 会同时影响:减伤率、招架率(招架率 = 闪避率 + 减伤率)、武士刀构筑强度 —— 这三处要一起看</li><li>改韧性上限会同时影响:破防频率、双刀构筑、喷射装置的定位 —— 这三处要一起看</li><li><strong>纯逻辑层不 extends Node</strong>,才能脱离场景跑几千次循环做数值调试</li></ul>
+<hr>
+<h2 id="6.-配置化落地要求">6. 配置化落地要求</h2>
+<table><thead><tr><th>层</th><th>放什么</th><th>例</th></tr></thead><tbody><tr><td><code>data/*.gd</code></td><td>Resource 类定义,只有 <code>@export</code> 字段,<strong>不放数值</strong></td><td><code>combat_config.gd</code> / <code>skill_data.gd</code> / <code>module_data.gd</code></td></tr><tr><td><code>config/*.tres</code></td><td>实际数值实例,<strong>改平衡只动这里</strong></td><td><code>config/combat_config.tres</code> / <code>config/hands/*.tres</code></td></tr><tr><td><code>scripts/core/</code></td><td>规则逻辑,读配置不写死数字,不许 <code>extends Node</code></td><td><code>stats_calc.gd</code> / <code>damage_pipeline.gd</code></td></tr></tbody></table>
+<p><strong>必须走配置的</strong>:倍率 / 层数 / 阈值 / CD / 上限 / 公式常量 / 能量槽容量 / 技能伤害倍率 / 冲击力倍率。
+<strong>必须写死在代码的</strong>:5 回合上限 / 双档切换规则 / 结算六步顺序 / 溢出清零 / 三核心字段不共用。</p>
+<hr>
+<h2 id="7.-内容数值索引">7. 内容数值索引</h2>
+<p>具体模块的数值不在本文档重复维护,分散在各模块段落里:</p>
+<table><thead><tr><th>内容</th><th>数值所在</th></tr></thead><tbody><tr><td>火力核心 3 手部</td><td><code>03-内容设计.md</code> §1.1</td></tr><tr><td>火力核心 3 腿部</td><td><code>03-内容设计.md</code> §1.2</td></tr><tr><td>暗杀核心 3 手部</td><td><code>03-内容设计.md</code> §1.3</td></tr><tr><td>暗杀核心 3 腿部</td><td><code>03-内容设计.md</code> §1.4</td></tr><tr><td>强击核心 3 手部</td><td><code>03-内容设计.md</code> §1.5</td></tr><tr><td>强击核心 3 腿部</td><td><code>03-内容设计.md</code> §1.6</td></tr><tr><td>强击腿部双档速查表</td><td><code>03-内容设计.md</code> §1.6 末尾</td></tr><tr><td>敌人数值</td><td>🔴 尚未设计(见 03 §4)</td></tr></tbody></table>
+<blockquote><strong>一旦这些数值开始频繁调整,就应该把它们抽成表搬进本文档</strong> —— 现在内容还小,散着更好读。</blockquote>
+  <footer>Maid RPG 设计文档 · 赛博朋克 / 机械女仆 / 搞笑无厘头 · Godot · 独立开发<br>
+  本页由 <code>site/build.py</code> 从仓库内的 Markdown 生成,内容以仓库为准。</footer>
+</main>
+</div>
+<div class="toc"><b>本页目录</b><a class="l1" href="#05-·-数值设计及配置文档">05 · 数值设计及配置文档</a><a class="l2" href="#0.-两条铁律">0. 两条铁律</a><a class="l2" href="#1.-公式速查">1. 公式速查</a><a class="l3" href="#1.1-属性派生">1.1 属性派生</a><a class="l3" href="#1.2-受击结算六步,顺序不可换">1.2 受击结算(六步,顺序不可换)</a><a class="l3" href="#1.3-行动条">1.3 行动条</a><a class="l3" href="#1.4-逃跑">1.4 逃跑</a><a class="l2" href="#2.-全局配置入口">2. 全局配置入口</a><a class="l2" href="#3.-成长与产出">3. 成长与产出</a><a class="l2" href="#4.-待定数值登记表">4. 待定数值登记表</a><a class="l2" href="#5.-数值调试基准">5. 数值调试基准</a><a class="l2" href="#6.-配置化落地要求">6. 配置化落地要求</a><a class="l2" href="#7.-内容数值索引">7. 内容数值索引</a></div>
+</body></html>
