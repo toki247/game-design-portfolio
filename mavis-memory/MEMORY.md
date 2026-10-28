@@ -224,6 +224,14 @@ Type: reference
 1. [PaperStar/GDD](https://github.com/PaperStar/GDD) — 中文完整工作示例"纸飞机的星际冒险"
 2. [The Complete GDD Template (ludessy.com)](https://ludessy.com/blog/complete-game-design-document-template/) — 英文 6 段模板 + The Cinder Crown 工作示例 + 常见错误
 3. [Solo Dev GDD 模板 (dev.to)](https://dev.to/vincentchabran/a-game-design-document-template-sized-for-solo-devs-not-aaa-studios-3o2e) — 英文 solo 专用 11 段,1 文档可填完
+
+### 五层文档结构依据文章 (2026-10-28 存档)
+Type: reference
+
+- **原文**:小黑盒《AI能帮你写代码,但游戏究竟该怎么设计?》作者 陌情 — https://www.xiaoheihe.cn/app/bbs/link/193703720
+- **本地存档**:`参考资料/游戏设计文档五层结构-文章提炼.md`(已入 git,commit `04b171a`)。小黑盒是 SPA,直接 fetch 只能拿到空壳,正文靠搜索工具提取
+- **要点**:五层 = GDD / 系统设计 / 内容设计 / 关卡设计 / 数值设计及配置;系统策划案 12 项固定内容(本仓库 02 的第 13 项「边界条件」来自文章职责原话「功能、运行规则、交互流程及边界条件」)
+- **文章两条金句**:① 核心体验设计很大程度决定游戏是否好玩(→ 01 §4 是最上游锚点)② 内容设计最难的是平衡不同玩家画像的需求(→ 对应 01 §7「玩家画像未定」)
 ### Mavis memory 同步流程(2026-09-08,覆盖 6-30 旧版)
 Type: config
 
