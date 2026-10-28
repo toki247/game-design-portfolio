@@ -8,7 +8,7 @@
 <div class="wrap">
 <aside>
   <div class="brand"><b>Maid RPG</b><span>设计文档 · 五层结构</span></div>
-  <nav><a class="" href="index.html"><i></i>总览</a><a class="on" href="01-GDD.html"><i></i>① GDD</a><a class="" href="02-系统设计.html"><i></i>② 系统设计</a><a class="" href="03-内容设计.html"><i></i>③ 内容设计</a><a class="" href="04-关卡设计.html"><i></i>④ 关卡设计</a><a class="" href="05-数值与配置.html"><i></i>⑤ 数值与配置</a><a class="" href="系统规格书.html"><i></i>执行层</a></nav>
+  <nav><a class="" href="index.html"><i></i>总览</a><a class="on" href="01-GDD.html"><i></i>① GDD</a><a class="" href="02-系统设计.html"><i></i>② 系统设计</a><a class="" href="03-内容设计.html"><i></i>③ 内容设计</a><a class="" href="04-关卡设计.html"><i></i>④ 关卡设计</a><a class="" href="05-数值与配置.html"><i></i>⑤ 数值与配置</a><a class="" href="系统规格书.html"><i></i>执行层</a><a class="" href="工作面板.html"><i></i>工作面板</a></nav>
 </aside>
 <main>
   <div class="pagehead">
@@ -17,7 +17,7 @@
     <p>定位 · 核心体验 · 核心玩法 · 核心循环 · 3C</p>
     <div class="st ok">✅ 全部已定稿 · 核心循环 10-27 转正</div>
   </div>
-  <blockquote><strong>职责</strong>:明确游戏定位、核心体验、核心玩法、核心循环及整体设计方向。<br><strong>这一层最重要的一条</strong>:核心体验。几乎所有后续设计(系统 / 内容 / 关卡 / 数值)都是为了实现它而存在。<br><strong>上游</strong>:无(这是根)<br><strong>下游</strong>:<code>02-系统设计.md</code>、<code>03-内容设计.md</code>、<code>04-关卡设计.md</code>、<code>05-数值与配置.md</code><br><strong>状态</strong>:定位 / 体验 / 玩法 / 3C 已定;<strong>核心循环已定稿</strong>(2026-10-27)</blockquote>
+  <blockquote><strong>职责</strong>:明确游戏定位、核心体验、核心玩法、核心循环及整体设计方向。<br><strong>这一层最重要的一条</strong>:核心体验。几乎所有后续设计(系统 / 内容 / 关卡 / 数值)都是为了实现它而存在。<br><strong>上游</strong>:无(这是根)<br><strong>下游</strong>:<code>02-系统设计.md</code>、<code>03-内容设计.md</code>、<code>04-关卡设计.md</code>、<code>05-数值与配置.md</code><br><strong>状态</strong>:定位 / 体验 / 玩法 / 3C 已定;<strong>核心循环结构已定,内容待填</strong>(2026-10-27)</blockquote>
 <hr>
 <h2 id="1.-游戏定位">1. 游戏定位</h2>
 <table><thead><tr><th>维度</th><th>选择</th></tr></thead><tbody><tr><td>类型</td><td>回合制 RPG(单人战斗 + 探索)</td></tr><tr><td>题材</td><td>赛博朋克 / 机械女仆 / 搞笑无厘头</td></tr><tr><td>引擎</td><td>Godot</td></tr><tr><td>平台</td><td>PC</td></tr><tr><td>队伍</td><td>个人(独立开发)</td></tr><tr><td>结构</td><td>3 章节 × 1 地图</td></tr><tr><td>章节</td><td>黑街外围 → 黑帮大楼 → 大楼地下室</td></tr></tbody></table>
@@ -34,27 +34,18 @@
 <ul><li><strong>回合制战斗 + 3 槽装备构筑</strong></li><li>女仆可以改装手部、腿部、核心三个模块的武装</li><li>改装后形成 <strong>27 种不同战斗构筑</strong>(3 核心 × 3 手部 × 3 腿部)</li></ul>
 <hr>
 <h2 id="4.-核心循环">4. 核心循环</h2>
-<blockquote>✅ <strong>已定稿</strong>(2026-10-27 确认)。本节只回答三件事:<strong>玩家反复在做什么、每次得到什么反馈、为什么要重复</strong>。<br>流程细节不在这里重复 —— 战斗内流程见 <code>02-系统设计.md</code> §1.5,章节流程见 <code>04-关卡设计.md</code> §2。</blockquote>
+<blockquote>📌 <strong>本节是空模板</strong> —— 结构已定,内容由你填。<br>只回答三件事:① 玩家反复在做什么 ② 每次得到什么反馈 ③ 为什么要重复。<br>流程细节不写在这里 —— 战斗内见 <code>02-系统设计.md</code> §1.5,章节见 <code>04-关卡设计.md</code> §2。</blockquote>
 <h3 id="4.1-一句话">4.1 一句话</h3>
-<p><strong>在 1-2 小时的探索里反复「配一套构筑 → 拿它打一场 → 用战果把它变强 → 换下一套构筑」,直到够格打最终 BOSS。</strong></p>
-<p>三层是套在一起的,不是三段并列的流程:</p>
-<pre class="code"><code data-lang="">小时级(章节)   探索找线索 · 解锁新手段  ──►  决定这一章能用什么构筑
-      ▼
-分钟级(战斗间) 选构筑 · 分配属性点        ──►  决定下一场打得顺不顺
-      ▼
-秒级(战斗内)   出招 · 赌时机              ──►  决定这一场能不能赢
-      ▲
-      └────────  战果回流(经验 / 掉落)  ────────┘</code></pre>
+<blockquote>💡 用一句话说清核心循环</blockquote>
 <h3 id="4.2-三层循环">4.2 三层循环</h3>
-<table><thead><tr><th>层级</th><th>反复做的动作</th><th>每次的反馈</th><th>为什么愿意重复</th></tr></thead><tbody><tr><td><strong>秒级 · 战斗内</strong></td><td>行动条轮到我时选指令:打哪一招 / 改用技能 / 开强击 / 逃</td><td>立刻结算 —— 伤害、破防、状态变化、对手的下一手</td><td>每回合都是一次独立的小赌注,赢不赢我心里有数</td></tr><tr><td><strong>分钟级 · 战斗间</strong></td><td>用战果配出下一场要用的构筑,分配属性点</td><td>变强看得见,但也看得见自己的构筑被哪类敌人克</td><td>27 种构筑的搭配空间大,每次换装都是一次新尝试</td></tr><tr><td><strong>小时级 · 章节</strong></td><td>在地图上找线索、解锁改装件、推进主线</td><td>线索本身就是奖励,而且它决定结局走向</td><td>情报越齐可选的路越多 —— 但时间只有 1-2 小时</td></tr></tbody></table>
-<p><strong>三层不能互相抢戏</strong>:</p>
-<ul><li>秒级靠<strong>操作与计算</strong>,分钟级靠<strong>搭配</strong>,小时级靠<strong>信息</strong>。</li><li>如果战斗里的每个选择都能靠构筑强度碾过去,秒级就废了。</li><li>如果线索只影响结局、不影响战斗,小时级就废了。</li></ul>
+<table><thead><tr><th>层级</th><th>反复做的动作</th><th>每次的反馈</th><th>为什么愿意重复</th></tr></thead><tbody><tr><td>秒级 · 战斗内</td><td></td><td></td><td></td></tr><tr><td>分钟级 · 战斗间</td><td></td><td></td><td></td></tr><tr><td>小时级 · 章节</td><td></td><td></td><td></td></tr></tbody></table>
+<blockquote>💡 三层的爽点不能互相抢戏</blockquote>
 <h3 id="4.3-关键决策点">4.3 关键决策点</h3>
-<p>只列 GDD 层面的决策点,细则都在 02 / 04:</p>
-<table><thead><tr><th>决策</th><th>细则在哪</th></tr></thead><tbody><tr><td>行动条轮到玩家 → 选指令(攻击 / 技能 / 逃跑)</td><td><code>02</code> §1.5 10.1</td></tr><tr><td><strong>开强击模式 = 战斗内的主动指令</strong>,与出招同级</td><td><code>02</code> §1.8 强击核心</td></tr><tr><td>敌人轮到 → AI 选招(规则简单优先,跑起来再细化)</td><td><code>02</code> §1.5 10.4</td></tr><tr><td>胜负判定 → 战果结算</td><td><code>02</code> §1.5 10.2 / 10.3.1</td></tr><tr><td><strong>改装 = 章节节点解锁 + 战斗中随时可换已解锁的</strong></td><td><code>02</code> §4 / <code>04</code> §2</td></tr><tr><td><strong>战斗失败 = 回到战斗前的地图状态,重打本场</strong>;线索与已解锁改装件保留,不掉级不丢装备</td><td><code>02</code> §1.4 失败出口</td></tr><tr><td>线索 → 防御程序 → 结局分支</td><td><code>02</code> §7 / <code>04</code> §2 章节 3</td></tr></tbody></table>
-<h3 id="4.4-三条自洽性约束">4.4 三条自洽性约束</h3>
-<p>改设计时拿这三条验一遍,防止破坏核心循环:</p>
-<ol><li><strong>强击 5 回合硬上限是规则不是配置</strong> —— 任何构筑、任何模块都不能延长它(已定 4 / 5)。</li><li><strong>行动速度与战斗速度量纲分离</strong> —— 战斗速度拉满不会让你先动手,行动速度拉满也不会提高闪避(已定 15)。</li><li><strong>属性点总量不能盖过构筑差异</strong> —— 否则「防御拉满」变成万能解,27 种构筑的设计就废了(<code>05</code> §3 风险提示)。</li></ol>
+<blockquote>💡 列 GDD 层面的关键决策,每条注明细则在 02 / 04 的哪一节</blockquote>
+<table><thead><tr><th>决策</th><th>细则在哪</th></tr></thead><tbody><tr><td>行动条轮到玩家 → 选指令</td><td></td></tr><tr><td>开强击模式在循环里算什么?</td><td></td></tr><tr><td>敌人轮到 → AI 选招</td><td></td></tr><tr><td>改装在循环里处于什么位置?</td><td></td></tr><tr><td>战斗失败之后是什么?</td><td></td></tr><tr><td>线索 → 防御程序 → 结局分支</td><td></td></tr></tbody></table>
+<h3 id="4.4-自洽性约束">4.4 自洽性约束</h3>
+<blockquote>💡 改设计时拿来验的硬约束:写清「为什么不能破」「破了会怎样」</blockquote>
+<table><thead><tr><th>约束</th><th>为什么不能破</th><th>破了会怎样</th></tr></thead><tbody><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></tbody></table>
 <hr>
 <h2 id="5.-3c">5. 3C</h2>
 <table><thead><tr><th>维度</th><th>选择</th></tr></thead><tbody><tr><td>角色</td><td>机械女仆(主角)</td></tr><tr><td>相机</td><td><strong>俯视角</strong>(参考 宝可梦 + 八方旅人)</td></tr><tr><td>操控</td><td>移动:八方旅人式 / 战斗:回合制菜单(参考 兰斯)</td></tr></tbody></table>
@@ -63,11 +54,11 @@
 <ul><li><strong>基调</strong>:搞笑无厘头(参考 兰斯、夏娃年代记)</li><li><strong>叙事结构</strong>:小姐是黑街地下话事人,伪装被抓走逃离原生家庭 → 女仆追查 → 真相揭示 → 终极对抗</li><li><strong>反常识点</strong>:读者以为在打黑帮老大,实际老大是假象,最终 boss 是小姐本人</li><li><strong>核心循环</strong>:见 §4</li></ul>
 <hr>
 <h2 id="7.-本层缺口">7. 本层缺口</h2>
-<table><thead><tr><th>缺口</th><th>为什么重要</th><th>状态</th></tr></thead><tbody><tr><td>战斗节奏目标(一场战斗预期多少回合 / 多少秒)</td><td>决定数值调试基准,也是「好玩吗」的第一道闸</td><td>🟡 未定(见 05 §5)</td></tr><tr><td>玩家画像(目标玩家是谁、给什么爽点)</td><td>内容设计需要它来平衡「不同玩家画像的需求」</td><td>🔴 未定</td></tr><tr><td>失败后到底损失什么(经验 / 金币 / 线索)</td><td>已定「失败重打本场,不设存档点」,但具体损失还没定(见 <code>05</code> §4 #17)</td><td>🔴 未定</td></tr><tr><td>参考作品清单(除 3C 外)</td><td>美术 / 音 / 战斗手感都需要对标物</td><td>🟡 部分</td></tr></tbody></table>
-<blockquote><strong>下一步建议</strong>:核心循环已定稿,上游锚点不再是风险。下一步去补 <code>02-系统设计.md</code> 里缺的那 6 套系统 —— 优先 <strong>敌人能力 + 压迫矩阵</strong>(<code>03</code> §4,S-9 开工前必须先想清楚)。</blockquote>
+<table><thead><tr><th>缺口</th><th>为什么重要</th><th>状态</th></tr></thead><tbody><tr><td><strong>核心循环内容未填</strong></td><td>§4 结构已就位,内容是全文最上游的锚点 —— 错了四层全返工</td><td>🔴 待你填</td></tr><tr><td>战斗节奏目标(一场战斗预期多少回合 / 多少秒)</td><td>决定数值调试基准,也是「好玩吗」的第一道闸</td><td>🟡 未定(见 05 §5)</td></tr><tr><td>玩家画像(目标玩家是谁、给什么爽点)</td><td>内容设计需要它来平衡「不同玩家画像的需求」</td><td>🔴 未定</td></tr><tr><td>失败惩罚与重试节奏</td><td>1-2 小时流程里死了重来几次是体验底线(见 §4.3)</td><td>🔴 未定</td></tr><tr><td>参考作品清单(除 3C 外)</td><td>美术 / 音 / 战斗手感都需要对标物</td><td>🟡 部分</td></tr></tbody></table>
+<blockquote><strong>下一步建议</strong>:先填 §4 核心循环(结构已就位),再去补 <code>02-系统设计.md</code> 里缺的那 6 套系统 —— 优先 <strong>敌人能力 + 压迫矩阵</strong>(<code>03</code> §4,S-9 开工前必须先想清楚)。</blockquote>
   <footer>Maid RPG 设计文档 · 赛博朋克 / 机械女仆 / 搞笑无厘头 · Godot · 独立开发<br>
   本页由 <code>site/build.py</code> 从仓库内的 Markdown 生成,内容以仓库为准。</footer>
 </main>
 </div>
-<div class="toc"><b>本页目录</b><a class="l1" href="#01-·-gdd游戏总体设计文档">01 · GDD(游戏总体设计文档)</a><a class="l2" href="#1.-游戏定位">1. 游戏定位</a><a class="l2" href="#2.-核心体验">2. 核心体验</a><a class="l3" href="#2.1-玩家体验">2.1 玩家体验</a><a class="l3" href="#2.2-流程长度">2.2 流程长度</a><a class="l3" href="#2.3-叙事张力">2.3 叙事张力</a><a class="l2" href="#3.-核心玩法">3. 核心玩法</a><a class="l2" href="#4.-核心循环">4. 核心循环</a><a class="l3" href="#4.1-一句话">4.1 一句话</a><a class="l3" href="#4.2-三层循环">4.2 三层循环</a><a class="l3" href="#4.3-关键决策点">4.3 关键决策点</a><a class="l3" href="#4.4-三条自洽性约束">4.4 三条自洽性约束</a><a class="l2" href="#5.-3c">5. 3C</a><a class="l2" href="#6.-整体设计方向">6. 整体设计方向</a><a class="l2" href="#7.-本层缺口">7. 本层缺口</a></div>
+<div class="toc"><b>本页目录</b><a class="l1" href="#01-·-gdd游戏总体设计文档">01 · GDD(游戏总体设计文档)</a><a class="l2" href="#1.-游戏定位">1. 游戏定位</a><a class="l2" href="#2.-核心体验">2. 核心体验</a><a class="l3" href="#2.1-玩家体验">2.1 玩家体验</a><a class="l3" href="#2.2-流程长度">2.2 流程长度</a><a class="l3" href="#2.3-叙事张力">2.3 叙事张力</a><a class="l2" href="#3.-核心玩法">3. 核心玩法</a><a class="l2" href="#4.-核心循环">4. 核心循环</a><a class="l3" href="#4.1-一句话">4.1 一句话</a><a class="l3" href="#4.2-三层循环">4.2 三层循环</a><a class="l3" href="#4.3-关键决策点">4.3 关键决策点</a><a class="l3" href="#4.4-自洽性约束">4.4 自洽性约束</a><a class="l2" href="#5.-3c">5. 3C</a><a class="l2" href="#6.-整体设计方向">6. 整体设计方向</a><a class="l2" href="#7.-本层缺口">7. 本层缺口</a></div>
 </body></html>

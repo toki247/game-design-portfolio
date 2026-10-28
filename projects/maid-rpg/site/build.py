@@ -42,7 +42,9 @@ DOCS = [
      "✅ 拆分完成", "exec"),
 ]
 
-NAV = [("index", "总览")] + [(k, lbl) for k, lbl, _, _, _, _, _ in DOCS]
+NAV = ([("index", "总览")]
+       + [(k, lbl) for k, lbl, _, _, _, _, _ in DOCS]
+       + [("工作面板", "工作面板")])
 
 # ---------------------------------------------------------------- 基础工具
 ESC = {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}
@@ -173,6 +175,8 @@ def parse_list(lines, i):
 
 
 def md_to_html(text):
+    # HTML 注释是"占位提示"的写法,不进页面
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
     lines = text.replace("\r\n", "\n").split("\n")
     out = []
     toc = []
@@ -363,6 +367,9 @@ td code{white-space:nowrap}
 .card span{display:block;color:var(--fg3);font-size:12.5px;line-height:1.6}
 .card .st{margin-top:10px;font-size:12px}
 .pagehead .st{margin-top:10px;font-size:12.5px}
+.more{margin:26px 0 0;font-size:13.5px}
+.more a{color:var(--acc);text-decoration:none;border-bottom:1px solid transparent}
+.more a:hover{border-bottom-color:var(--acc)}
 .st-ok{color:var(--acc2)}.st-part{color:var(--warn)}.st-weak{color:var(--bad)}.st-exec{color:var(--fg3)}
 .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11.5px;
   background:var(--bg3);border:1px solid var(--line);color:var(--fg2);margin-right:6px}
@@ -439,6 +446,11 @@ HERO = """
 """
 
 
+PANEL_LINK = """
+<p class="more"><a href="工作面板.html">工作面板 —— 文档导航 · 写作规矩 · 决议索引 · 下一步 →</a></p>
+"""
+
+
 def card(key, kicker, name, desc):
     return ('<a class="card" href="%s.html"><div class="lv">%s</div><b>%s</b>'
             '<span>%s</span></a>'
@@ -453,19 +465,25 @@ def build():
     with io.open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8", newline="") as f:
         f.write(CSS)
 
-    # 首页
-    idx = io.open(os.path.join(SRC, "idea.md"), "r", encoding="utf-8", newline="").read()
-    body, toc = md_to_html(idx)
+    # 首页:只留结构(hero + 五层卡片 + 一个工作面板入口)
     cards = "".join(
         card(k, lbl, name, desc)
         for k, lbl, _, name, desc, status, cls in DOCS)
-    hero = HERO % cards
-    # 去掉 idea.md 的 h1(首页 hero 已经承担)
-    body = re.sub(r"^\s*<h1[^>]*>.*?</h1>\s*", "", body, count=1, flags=re.S)
-    html = page("index", "总览", "项目总览", "文档导航 · 历史步骤映射 · 决议索引 · 下一步",
-                hero + body, toc)
+    html = page("index", "总览", "项目总览",
+                "五层结构 + 执行层 —— 每条内容只存在于一个文件",
+                HERO % cards + PANEL_LINK, None)
     io.open(os.path.join(DIST, "index.html"), "w", encoding="utf-8", newline="").write(html)
     print("index.html")
+
+    # 工作面板:idea.md(文档导航 / 写作规矩 / 历史映射 / 决议索引 / 下一步)
+    idx = io.open(os.path.join(SRC, "idea.md"), "r", encoding="utf-8", newline="").read()
+    body, toc = md_to_html(idx)
+    body = re.sub(r"^\s*<h1[^>]*>.*?</h1>\s*", "", body, count=1, flags=re.S)
+    html = page("工作面板", "工作面板", "索引 · 进度",
+                "文档导航 · 写作规矩 · 历史步骤映射 · 决议索引 · 下一步",
+                body, toc)
+    io.open(os.path.join(DIST, "工作面板.html"), "w", encoding="utf-8", newline="").write(html)
+    print("工作面板.html")
 
     # 各文档页
     for key, lbl, fname, name, desc, status, cls in DOCS:
