@@ -423,3 +423,15 @@ Type: config
 - 嵌套列表必须用**栈**记 `[indent, tag, li_open]`,不能靠缩进数硬算,否则 `<li>`/`<ul>` 不配平
 - **`git push` 被拒要先看远端**:远端可能有本地没有的新提交(尤其是 memory 同步),而且远端改了源文档 → **站点产物要按远端最新文档重建**,否则线上 HTML 是旧内容
 - PowerShell `Set-Content -Encoding UTF8` 会加 BOM 且可能改行尾,**跨进程同步 memory 文件要用 Python `shutil.copy2` 做字节级复制**,否则仓库里会出现无意义的整文件 diff
+### 四份策划模板资料 · 追查结果与替代品 (2026-10-28)
+
+**原资源已永久不可达 —— 不要重复追查**:小黑盒作者陌情文末提到的四份资料(系统策划案模板 / 内容设计模板 / GDD→可玩原型流程 / 数值设计流程),唯一分发渠道 `my-portfolio-crq9.onrender.com` 已被作者本人停服(onrender 免费实例闲置挂起,返回 `Service Suspended`)。Wayback `archived_snapshots: {}` 无任何快照;CDX API 当时 IA 自身 `Temporarily Offline`;`github.com/crq9` 404;Vercel `DEPLOYMENT_NOT_FOUND`;Netlify site-not-found;4 组针对性搜索无镜像。**不是抓取失败,是资源已不存在。**
+
+**四份替代品已存档(仓库 `参考资料/`,均在 `e3a2a53` 提交)**:
+- `系统策划案模板-GDD-CN八段式.md` —— ClawHub `sharinchan233/gdd-cn` 的 SKILL.md 全文(八段:概述/目的/规则/公式数值/配置表/边界/依赖接口/验收)。两条铁律与本项目同构:「文档写规则,数值进表」「没你确认,不落盘」「不推翻已有结论」。配套 4 个 reference 文件在 ClawHub 有路径+sha256 但无公开直链,本轮未取,装 skill 可得。
+- `内容设计模板-GDD九段式.md` —— GitHub raw `sljdxde/schrodinger-skills` 的九段式 GDD 模板。第八段要求所有数值标注来源(设计初值/已验证/待校准);第二段「玩法走读」= 60-120 秒连续片段。
+- `GDD到可玩原型-AI游戏设计工作流.md` —— EasyClaw 文章(繁体转简体)。链路:想法→玩家幻想→核心循环→机制→范围→精简 GDD→原型计划→里程碑→playtest。核心循环要能说清 30秒/5分钟/30分钟 三档;里程碑表 Concept Validation→First Playable→Vertical Slice→Content Expansion→Release。
+- `数值设计流程-数值策划白皮书.md` —— 小黑盒转载(知乎首发)。数字敏感区间 0.1~10000000;概率正常认知 1%~80%(>80% 建议伪概率必成功);养成概率变化 5%~60%(最敏感 10%~50%);日常产出量级至少 10+;战斗技能 CD 5~60 秒。**手游商业化语境**,概率/付费档位那几节对单机项目参考价值有限。
+- `策划模板资料-追查结果.md` —— 追查结论 + 替代品索引(总入口)
+
+**踩坑:站点页头状态串是手写的,会过期**。`site/build.py` 的 `DOCS` 里每页 status/cls 字符串不随文档自动更新 —— 本轮发现 01 仍写「核心循环 10-27 转正」(10-28 已退回空模板)、05 仍写「14 项数值待填」(实为 20 项)。**改文档状态时必须同步改 build.py 的 DOCS 并重建 dist**,否则站点比文档先说谎。
